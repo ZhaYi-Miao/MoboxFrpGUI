@@ -1,4 +1,4 @@
 # MoboxFrpGUI
 MoboxFrp（原MossFrp）WindowsGUI 客户端
 ---
-## 等moboxfrp开始使用之后我会再更新的喵
+## moboxfrp投入使用了但是我还在纠结我用flutter还是c# 在线等挺急的（

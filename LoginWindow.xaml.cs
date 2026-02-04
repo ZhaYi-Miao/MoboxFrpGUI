@@ -3,6 +3,8 @@ using System.Windows;
 using MoboxFrpGUI.Services;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.IO;
+using System.Reflection;
 
 namespace MoboxFrpGUI
 {
@@ -13,9 +15,32 @@ namespace MoboxFrpGUI
         public LoginWindow()
         {
             InitializeComponent();
+            ExtractResources();
             LoadSavedConfig();
         }
+        public void ExtractResources()
+        {
+            string resourceName = "MoboxFrpGUI.Resources.frpc.exe";
+            string targetFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
+            string targetFile = Path.Combine(targetFolder, "frpc.exe");
 
+            if (!Directory.Exists(targetFolder)) Directory.CreateDirectory(targetFolder);
+
+            if (!File.Exists(targetFile))
+            {
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+                {
+                    if (stream == null) return;
+
+                    using (FileStream fileStream = new FileStream(targetFile, FileMode.Create))
+                    {
+                        stream.CopyTo(fileStream);
+                    }
+                }
+            }
+        }
+
+        
         private void LoadSavedConfig()
         {
             var config = ConfigService.LoadConfig();

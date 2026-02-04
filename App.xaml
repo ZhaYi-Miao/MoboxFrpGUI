@@ -1,0 +1,40 @@
+﻿<Application x:Class="MoboxFrpGUI.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+             xmlns:ink="http://schemas.inkore.net/lib/ui/wpf/modern"
+             xmlns:local="clr-namespace:MoboxFrpGUI"
+             xmlns:services="clr-namespace:MoboxFrpGUI.Services"
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             StartupUri="LoginWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ink:ThemeResources>
+                    <ink:ThemeResources.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Light" ink:ThemeDictionary.Key="Light">
+                            <SolidColorBrush x:Key="MoboxPrimaryColor" Color="#673AB7" />
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="Dark" ink:ThemeDictionary.Key="Dark">
+                            <SolidColorBrush x:Key="MoboxPrimaryColor" Color="#BB86FC" />
+                        </ResourceDictionary>
+                    </ink:ThemeResources.ThemeDictionaries>
+                </ink:ThemeResources>
+
+                <ink:XamlControlsResources />
+
+                <ResourceDictionary Source="pack://application:,,,/iNKORE.UI.WPF;component/Themes/Generic.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <System:String x:Key="AppVersion">1.0.0 Release</System:String>
+
+            <services:InvertBooleanConverter x:Key="InvertBooleanConverter" />
+            <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+            <FontFamily x:Key="SoraFont">/MoboxFrpGUI;component/Resources/Fonts/#Sora</FontFamily>
+            <FontFamily x:Key="CodeFont">/MoboxFrpGUI;component/Resources/Fonts/#Source Code Pro</FontFamily>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

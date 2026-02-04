@@ -19,18 +19,11 @@
         <Grid.Resources>
             <FontFamily x:Key="SoraFont">/Resources/Fonts/#Sora</FontFamily>
             <FontFamily x:Key="CodeFont">/Resources/Fonts/#Source Code Pro</FontFamily>
-
-            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="Transparent" />
-            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
-            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
-            <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
-            <SolidColorBrush x:Key="NavigationViewSeparatorForeground" Color="Transparent" />
-            <Thickness x:Key="NavigationViewBorderThickness">0</Thickness>
         </Grid.Resources>
 
         <ui:NavigationView x:Name="NavView"
                            IsBackButtonVisible="Collapsed"
-                           IsSettingsVisible="True"
+                           IsSettingsVisible="False" 
                            IsTitleBarAutoPaddingEnabled="False"
                            OpenPaneLength="250"
                            CompactPaneLength="48"
@@ -65,15 +58,9 @@
                     <ui:NavigationViewItem.Icon>
                         <Grid Width="16" Height="16">
                             <Ellipse Fill="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
-
-                            <ui:FontIcon Glyph="&#xE779;" 
-                             FontSize="14" 
-                             Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                             VerticalAlignment="Center" 
-                             HorizontalAlignment="Center"/>
+                            <ui:FontIcon Glyph="&#xE779;" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Grid>
                     </ui:NavigationViewItem.Icon>
-
                     <ui:NavigationViewItem.Content>
                         <StackPanel VerticalAlignment="Center" Margin="12,0,0,0">
                             <TextBlock x:Name="TxtUserName" Text="未登录" FontWeight="Bold" FontSize="13"/>
@@ -81,36 +68,21 @@
                         </StackPanel>
                     </ui:NavigationViewItem.Content>
                 </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem Content="设置" Tag="Settings" FontFamily="{StaticResource SoraFont}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Glyph="&#xE713;" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
             </ui:NavigationView.FooterMenuItems>
 
-            <Border Margin="0,48,12,12" 
-                    Background="Transparent" 
-                    CornerRadius="10" 
-                    BorderThickness="1" 
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    ClipToBounds="True">
-
+            <Border Margin="0,48,12,12" Background="Transparent" CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" ClipToBounds="True">
                 <Grid>
                     <Border Background="{DynamicResource LayerFillColorDefaultBrush}" Opacity="0.2" />
-
                     <ui:Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden"/>
                 </Grid>
             </Border>
         </ui:NavigationView>
 
-        <Grid Height="48" VerticalAlignment="Top" IsHitTestVisible="False">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="48" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0,0,0">
-                <TextBlock Text="MoboxFRP" FontFamily="{StaticResource SoraFont}" FontSize="15" FontWeight="Bold" />
-                <TextBlock Text="{StaticResource AppVersion}" 
-                   FontFamily="{StaticResource CodeFont}" 
-                   FontSize="12" Opacity="0.6" Margin="10,3.5,0,0" />
-            </StackPanel>
-        </Grid>
-
-        <xa:SimpleStackPanel x:Name="uiAlert" MaxWidth="475" Margin="0,0,24,24" HorizontalAlignment="Right" VerticalAlignment="Bottom" Spacing="8" />
     </Grid>
 </Window>

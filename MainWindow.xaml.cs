@@ -110,6 +110,9 @@ namespace MoboxFrpGUI
                     case "Logs":
                         ContentFrame.Navigate(new LogsPage());
                         break;
+                    case "Settings":
+                        ContentFrame.Navigate(new SettingsPage());
+                        break;
                 }
                 if (NavView.DisplayMode != NavigationViewDisplayMode.Expanded)
                 {

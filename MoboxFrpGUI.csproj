@@ -17,6 +17,7 @@
     <Company>ZhaYi</Company>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<RepositoryUrl>https://github.com/ZhaYi-Miao/MoboxFrpGUI</RepositoryUrl>
+	<SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
 	<PackageIcon>logo.jpg</PackageIcon>
   </PropertyGroup>
 

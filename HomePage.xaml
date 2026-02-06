@@ -32,63 +32,81 @@
             </xa:SimpleStackPanel>
 
             <StackPanel Grid.Row="1" Grid.Column="0">
-                <Border Height="400" CornerRadius="12" ClipToBounds="True"
-                        BorderThickness="1" 
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="15" Direction="270" Opacity="0.05" ShadowDepth="2"/>
-                    </Border.Effect>
+                <Viewbox Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                    <Border Width="1200" Height="630" 
+                CornerRadius="16" ClipToBounds="True"
+                BorderThickness="1" 
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="20" Direction="270" Opacity="0.1" ShadowDepth="4"/>
+                        </Border.Effect>
 
-                    <Grid>
-                        <Image Source="https://api.dujin.org/bing/1920.php" 
-                               Stretch="UniformToFill" 
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <Grid x:Name="AdGrid" Cursor="Hand" MouseLeftButtonDown="AdCard_Click" Background="Transparent">
+                            <Image x:Name="ImgBing" 
+                                   Source="https://api.dujin.org/bing/1920.php" 
+                                   Stretch="Fill"  
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                        <Border>
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                    <GradientStop Color="#99000000" Offset="0"/>
-                                    <GradientStop Color="#00000000" Offset="0.7"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                        </Border>
+                            <Image x:Name="ImgAd" 
+                                   Opacity="0"
+                                   Stretch="Fill" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>  
 
-                        <Grid Margin="32">
-                            <xa:SimpleStackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Spacing="12">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemAccentColorBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="公告栏" FontSize="14" Opacity="0.9" Foreground="White" FontWeight="SemiBold"/>
+                            <Border IsHitTestVisible="False">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#E6000000" Offset="0"/>
+                                        <GradientStop Color="#00000000" Offset="0.6"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+
+                            <Grid Margin="48">
+                                <xa:SimpleStackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Spacing="16">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="10" Height="10" Fill="{DynamicResource SystemAccentColorBrush}" Margin="0,0,10,0"/>
+                                        <TextBlock x:Name="TxtTag" Text="公告栏" FontSize="18" Opacity="0.9" Foreground="White" FontWeight="SemiBold"/>
+                                    </StackPanel>
+
+                                    <TextBlock x:Name="TxtNoticeTitle" Text="Mobox FRP 启动器" 
+                                   FontSize="48" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" MaxWidth="700">
+                                        <TextBlock.Effect>
+                                            <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.6"/>
+                                        </TextBlock.Effect>
+                                    </TextBlock>
+
+                                    <TextBlock x:Name="TxtNotice" Text="体验全新的内网穿透管理，更快速、更稳定。" 
+                                   FontSize="24" Foreground="White" Opacity="0.8" TextWrapping="Wrap" MaxWidth="600"/>
+                                </xa:SimpleStackPanel>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                    <Button x:Name="BtnPrev" Content="&#xE760;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                Style="{StaticResource DefaultButtonStyle}" 
+                                Foreground="White" 
+                                Background="#44FFFFFF" 
+                                Width="54" Height="54" Margin="8"
+                                ui:ControlHelper.CornerRadius="27"
+                                Click="BtnPrev_Click"/>
+
+                                    <Button x:Name="BtnNext" Content="&#xE761;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                Style="{StaticResource DefaultButtonStyle}" 
+                                Foreground="White" 
+                                Background="#44FFFFFF" 
+                                Width="54" Height="54" Margin="8"
+                                ui:ControlHelper.CornerRadius="27"
+                                Click="BtnNext_Click"/>
                                 </StackPanel>
-                                <TextBlock x:Name="TxtNoticeTitle" Text="Mobox FRP 启动器" 
-                                           FontSize="36" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" MaxWidth="450">
-                                    <TextBlock.Effect>
-                                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.5"/>
-                                    </TextBlock.Effect>
-                                </TextBlock>
-                                <TextBlock x:Name="TxtNotice" Text="体验全新的内网穿透管理，更快速、更稳定。" 
-                                           FontSize="18" Foreground="White" Opacity="0.8" TextWrapping="Wrap" MaxWidth="400"/>
-                            </xa:SimpleStackPanel>
-
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                                <Button Content="&#xE760;" 
-                                        FontFamily="Segoe MDL2 Assets" 
-                                        Style="{StaticResource DefaultButtonStyle}" 
-                                        Foreground="White" 
-                                        Background="#33FFFFFF" 
-                                        Width="40" Height="40" Margin="4"
-                                        ui:ControlHelper.CornerRadius="20"/>
-                                                            <Button Content="&#xE761;" 
-                                        FontFamily="Segoe MDL2 Assets" 
-                                        Style="{StaticResource DefaultButtonStyle}" 
-                                        Foreground="White" 
-                                        Background="#33FFFFFF" 
-                                        Width="40" Height="40" Margin="4"
-                                        ui:ControlHelper.CornerRadius="20"/>
-                            </StackPanel>
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </Border>
+                    </Border>
+                </Viewbox>
             </StackPanel>
 
             <StackPanel Grid.Row="1" Grid.Column="2">

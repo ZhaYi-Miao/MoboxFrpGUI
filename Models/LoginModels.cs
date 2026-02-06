@@ -103,4 +103,21 @@ namespace MoboxFrpGUI.Models
         public string portEnd { get; set; }
     }
     #endregion
+
+    #region 广告相关
+    public class AdResponse
+    {
+        // 统一改为首字母大写，或者与你的代码调用保持一致
+        public bool Success { get; set; }
+        public AdData Data { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class AdData
+    {
+        public string AdID { get; set; }
+        public string Url_jump { get; set; } // 对应报错的 Url_jump
+        public string Url_pic { get; set; }  // 对应报错的 Url_pic
+    }
+    #endregion
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Net.Http;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
@@ -102,7 +103,7 @@ namespace MoboxFrpGUI
             ContentDialog updateDialog = new ContentDialog
             {
                 Title = "检查更新",
-                Content = "当前版本 (1.0.0) 已经是最新版本",
+                Content = "当前版本 (1.0.1) 已经是最新版本",
                 CloseButtonText = "确定",
                 DefaultButton = ContentDialogButton.Close
             };

@@ -103,7 +103,7 @@ namespace MoboxFrpGUI
             ContentDialog updateDialog = new ContentDialog
             {
                 Title = "检查更新",
-                Content = "当前版本 (1.0.1) 已经是最新版本",
+                Content = "当前版本 (1.0.2) 已经是最新版本 \n实际上没有写任何检查更新的代码（ \n去github仓库下载吧喵",
                 CloseButtonText = "确定",
                 DefaultButton = ContentDialogButton.Close
             };

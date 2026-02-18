@@ -163,47 +163,68 @@ namespace MoboxFrpGUI.Models
         // 停止隧道
         public void Stop()
         {
-            if (_runningPid.HasValue)
+            if (!_runningPid.HasValue)
             {
-                KillProcessByPid(_runningPid.Value);
-                _runningPid = null;
+                ResetUIStatus();
+                return;
             }
 
-            try
+            int pidToKill = _runningPid.Value;
+            Status = "正在停止...";
+
+            if (_process != null)
             {
-                if (_process != null)
+                try
                 {
-                    if (!_process.HasExited) _process.Kill(true);
-                    _process.Dispose();
+                    _process.EnableRaisingEvents = false;
+                    _process.CancelOutputRead();
+                    _process.CancelErrorRead();
                 }
+                catch { }
             }
-            catch { }
-            finally
+
+            Task.Run(() =>
             {
-                _process = null;
-                IsRunning = false;
-                Status = "已停止";
-            }
-        }
-        
-        // 利用pid尝试kill frpc
-        public static void KillProcessByPid(int pid)
-        {
-            try
-            {
-                using (var p = Process.GetProcessById(pid))
+                try
                 {
-                    if (p.ProcessName.Contains("frpc", StringComparison.OrdinalIgnoreCase))
+                    var startInfo = new ProcessStartInfo
                     {
-                        p.Kill(true);
+                        FileName = "taskkill",
+                        Arguments = $"/F /T /PID {pidToKill}",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+
+                    using (var killer = Process.Start(startInfo))
+                    {
+                        killer?.WaitForExit(2000);
                     }
+
+                    Debug.WriteLine($"[停止] 已调用 taskkill 强杀 PID: {pidToKill}");
                 }
-            }
-            catch (ArgumentException) { }
-            catch (Exception ex)
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[停止] {ex.Message}");
+                }
+                finally
+                {
+                    App.Current.Dispatcher.Invoke(() => ResetUIStatus());
+                }
+            });
+        }
+
+        private void ResetUIStatus()
+        {
+            if (_process != null)
             {
-                Debug.WriteLine($"[清理] 终止 PID {pid} 失败: {ex.Message}");
+                try { _process.Dispose(); } catch { }
+                _process = null;
             }
+
+            _runningPid = null;
+            IsRunning = false;
+            Status = "已停止";
+            AppendLog("[信息] 隧道已强制停止。");
         }
 
         // 日志相关显示盒清除

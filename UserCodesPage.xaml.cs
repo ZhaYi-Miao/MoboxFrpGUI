@@ -527,59 +527,57 @@ namespace MoboxFrpGUI
             }
         }
 
-        private async Task CreateTunnelIsolatedAsync(string name, UserCodeItem item, string localIP, string localPort, string remotePort, string protocol)
+        private async Task CreateTunnelIsolatedAsync(string uniqueName, UserCodeItem item, string lip, string lpt, string rpt, string proto)
         {
             try
             {
                 string rootPath = AppDomain.CurrentDomain.BaseDirectory;
-                string safeName = string.IsNullOrWhiteSpace(name) ? (item.codeID ?? "Unknown") : name;
-                string tunnelDir = Path.Combine(rootPath, "MoBoxFrp", "Tunnels", safeName);
-                string sourceFrpc = Path.Combine(rootPath, "Resources", "frpc.exe");
-
-                if (!Directory.Exists(tunnelDir)) Directory.CreateDirectory(tunnelDir);
-
+                string tunnelRootDir = Path.Combine(rootPath, "MoBoxFrp", "Tunnels", uniqueName);
+                if (!Directory.Exists(tunnelRootDir)) Directory.CreateDirectory(tunnelRootDir);
                 string serverAddr = item.node.Contains(".") ? item.node : $"{item.node}.moboxfrp.cn";
                 string serverPort = string.IsNullOrEmpty(item.portServer) ? "7000" : item.portServer;
+                
+                // toml配置文件内容写入
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"# MoboxFrp 自动生成 - {DateTime.Now}");
+                sb.AppendLine($"# ID = {item.codeID ?? "未知"}");
+                sb.AppendLine($"serverAddr = \"{serverAddr}\"");
+                sb.AppendLine($"serverPort = {serverPort}");
+                sb.AppendLine($"auth.token = \"{item.token}\"");
+                sb.AppendLine("");
+                sb.AppendLine("[[proxies]]");
+                sb.AppendLine($"name = \"{uniqueName}\""); // 使用带时间戳的名字
+                sb.AppendLine($"type = \"{proto}\"");
+                sb.AppendLine($"localIP = \"{lip}\"");
+                sb.AppendLine($"localPort = {lpt.Trim()}");
+                sb.AppendLine($"remotePort = {rpt.Trim()}");
 
-                StringBuilder toml = new StringBuilder();
-                toml.AppendLine($"# MoboxFrp 自动生成 - {DateTime.Now}");
-                toml.AppendLine($"# ID = {item.codeID ?? "未知"}");
-                toml.AppendLine($"serverAddr = \"{serverAddr}\"");
-                toml.AppendLine($"serverPort = {serverPort}");
-                toml.AppendLine($"auth.token = \"{item.token}\"");
-                toml.AppendLine("");
-                toml.AppendLine("[[proxies]]");
-                toml.AppendLine($"name = \"{safeName}\"");
-                toml.AppendLine($"type = \"{protocol}\"");
-                toml.AppendLine($"localIP = \"{localIP}\"");
-                toml.AppendLine($"localPort = {localPort.Trim()}");
-                toml.AppendLine($"remotePort = {remotePort.Trim()}");
+                string configPath = Path.Combine(tunnelRootDir, "config.toml");
+                await File.WriteAllTextAsync(configPath, sb.ToString(), new UTF8Encoding(false));
 
-                string configPath = Path.Combine(tunnelDir, "config.toml");
-                await File.WriteAllTextAsync(configPath, toml.ToString(), new UTF8Encoding(false));
-
+                // 复制 frpc.exe
+                string sourceFrpc = Path.Combine(rootPath, "Resources", "frpc.exe");
                 if (File.Exists(sourceFrpc))
                 {
-                    string targetFrpc = Path.Combine(tunnelDir, $"frpc_{safeName}.exe");
+                    string targetFrpc = Path.Combine(tunnelRootDir, $"frpc_{uniqueName}.exe");
                     await Task.Run(() => File.Copy(sourceFrpc, targetFrpc, true));
                 }
                 else
                 {
-                    throw new FileNotFoundException($"找不到核心组件，请确认以下路径是否存在文件：\n{sourceFrpc}");
+                    throw new FileNotFoundException($"找不到核心组件：{sourceFrpc}");
                 }
 
-                var successDialog = new Modern.ContentDialog
+                await new Modern.ContentDialog
                 {
                     Title = "生成成功",
-                    Content = $"隧道 [{safeName}] 已就绪。\n本地端口 {localPort} -> 远程端口 {remotePort}",
-                    PrimaryButtonText = "确定",
-                    DefaultButton = Modern.ContentDialogButton.Primary
-                };
-                await successDialog.ShowAsync();
+                    Content = $"隧道 [{uniqueName}] 已就绪。\n本地 {lpt} -> 远程 {rpt}",
+                    PrimaryButtonText = "确定"
+                }.ShowAsync();
+
             }
             catch (Exception ex)
             {
-                ContentDialogSafe("生成失败", ex.Message);
+                await Modern.MessageBox.ShowAsync($"创建失败: {ex.Message}");
             }
         }
 
@@ -607,10 +605,13 @@ namespace MoboxFrpGUI
 
             if (await dialog.ShowAsync() == Modern.ContentDialogResult.Primary)
             {
-                string name = FindControl<System.Windows.Controls.TextBox>(contentInstance, "CfgName")?.Text;
-                if (string.IsNullOrWhiteSpace(name)) name = item.codeID;
+                string nameInput = FindControl<System.Windows.Controls.TextBox>(contentInstance, "CfgName")?.Text;
 
-                foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
+                string baseName = string.IsNullOrWhiteSpace(nameInput) ? (item.codeID ?? "Tunnel") : nameInput;
+                foreach (char c in Path.GetInvalidFileNameChars()) baseName = baseName.Replace(c, '_');
+
+                // 生成带时间戳的唯一名称，优化多开时候的冲突
+                string uniqueName = $"{baseName}_{DateTime.Now:MMddHHmmss}";
 
                 string localIP = FindControl<System.Windows.Controls.TextBox>(contentInstance, "LocalIP")?.Text ?? "127.0.0.1";
                 string localPort = FindControl<System.Windows.Controls.TextBox>(contentInstance, "LocalPort")?.Text ?? "8080";
@@ -629,8 +630,7 @@ namespace MoboxFrpGUI
                     }.ShowAsync();
                     return;
                 }
-
-                await CreateTunnelIsolatedAsync(name, item, localIP, localPort, remotePort, protocol);
+                await CreateTunnelIsolatedAsync(uniqueName, item, localIP, localPort, remotePort, protocol);
             }
         }
 

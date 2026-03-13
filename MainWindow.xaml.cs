@@ -13,6 +13,8 @@ namespace MoboxFrpGUI
     {
         private readonly ApiService _apiService = new ApiService();
         private Forms.NotifyIcon _notifyIcon;
+        public bool IsForceClosing { get; set; } = false;
+
 
         public MainWindow()
         {
@@ -123,12 +125,20 @@ namespace MoboxFrpGUI
 
         private bool _isExiting = false;
 
-        // 拦截掉x的直接关闭，弹窗
+
+        // 退出程序拦截
+
         protected override async void OnClosing(CancelEventArgs e)
         {
             if (_isExiting)
             {
-                _notifyIcon?.Dispose();
+                base.OnClosing(e);
+                return;
+            }
+
+            if (IsForceClosing)
+            {
+                base.OnClosing(e);
                 return;
             }
 

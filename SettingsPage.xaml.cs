@@ -5,6 +5,7 @@ using System.Net.Http;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
+using MoboxFrpGUI.Services;
 
 namespace MoboxFrpGUI
 {
@@ -16,7 +17,23 @@ namespace MoboxFrpGUI
         {
             InitializeComponent();
             LoadCurrentTheme();
+            LoadSettingsState();
             _isInitialized = true;
+        }
+
+        // 同步设置里面所有的开关状态
+        private void LoadSettingsState()
+        {
+            var config = ConfigService.LoadConfig();
+            if (config != null)
+            {
+                ToggleAutoLogin.IsOn = config.AutoLogin;
+            }
+            else
+            {
+                // 默认关闭
+                ToggleAutoLogin.IsOn = false;
+            }
         }
 
         // 读取当前设置的主题
@@ -87,6 +104,39 @@ namespace MoboxFrpGUI
             }
         }
 
+        private void ToggleAutoLogin_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized) return;
+
+            var config = ConfigService.LoadConfig() ?? new UserConfig();
+            config.AutoLogin = ToggleAutoLogin.IsOn;
+
+            // 强制联动：自动登录开启时，记住密码必须开启
+            if (config.AutoLogin) config.RememberMe = true;
+
+            ConfigService.SaveConfig(config.Account, config.Password, config.RememberMe, config.AutoLogin);
+        }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. 清除配置
+            ConfigService.SaveConfig("", "", false, false);
+
+            // 2. 找到主窗口并开启强制关闭标志
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.IsForceClosing = true;
+            }
+
+            // 3. 打开登录窗口
+            LoginWindow login = new LoginWindow();
+            login.Show();
+
+            // 4. 关闭主窗口
+            mainWindow?.Close();
+        }
+
         private void UpdateWindowBackdrop()
         {
             var current = ThemeManager.Current.ApplicationTheme;
@@ -103,7 +153,7 @@ namespace MoboxFrpGUI
             ContentDialog updateDialog = new ContentDialog
             {
                 Title = "检查更新",
-                Content = "当前版本 (1.0.2) 已经是最新版本 \n实际上没有写任何检查更新的代码（ \n去github仓库下载吧喵",
+                Content = "当前版本 (1.0.3) 已经是最新版本 \n实际上没有写任何检查更新的代码（ \n去github仓库下载吧喵",
                 CloseButtonText = "确定",
                 DefaultButton = ContentDialogButton.Close
             };

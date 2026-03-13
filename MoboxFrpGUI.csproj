@@ -9,7 +9,7 @@
 	<UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
-    <Version>1.0.1</Version>
+    <Version>1.0.3</Version>
     <Product>MoboxFrpGUI</Product>
     <Copyright>Copyright © 2026 ZhaYi NetWork</Copyright>
     <Description>MoboxFrp 桌面客户端</Description>
@@ -19,7 +19,7 @@
 	<RepositoryUrl>https://github.com/ZhaYi-Miao/MoboxFrpGUI</RepositoryUrl>
 	<SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
 	<PackageIcon>logo.jpg</PackageIcon>
-	<FileVersion>1.0.1</FileVersion>
+	<FileVersion>1.0.3</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

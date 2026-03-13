@@ -27,7 +27,7 @@
 
             </ResourceDictionary.MergedDictionaries>
 
-            <System:String x:Key="AppVersion">1.0.2 Release</System:String>
+            <System:String x:Key="AppVersion">1.0.3 Release</System:String>
 
             <services:InvertBooleanConverter x:Key="InvertBooleanConverter" />
             <BooleanToVisibilityConverter x:Key="BoolToVis" />

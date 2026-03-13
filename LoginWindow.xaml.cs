@@ -40,24 +40,75 @@ namespace MoboxFrpGUI
             }
         }
 
-        
+
         private void LoadSavedConfig()
         {
             var config = ConfigService.LoadConfig();
-            if (config != null && config.RememberMe)
+            if (config != null)
             {
                 TxtAccount.Text = config.Account;
                 TxtPassword.Password = config.Password;
+                ChkRemember.IsChecked = config.RememberMe;
+                ChkAutoLogin.IsChecked = config.AutoLogin;
+
+                if (config.AutoLogin && !string.IsNullOrWhiteSpace(config.Account))
+                {
+                    Dispatcher.BeginInvoke(new Action(async () => {
+                        await PerformLogin(config.Account, config.Password, true);
+                    }));
+                }
+            }
+        }
+
+        // 登录复选框同步
+        private void ChkRemember_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ChkAutoLogin.IsChecked = false;
+        }
+
+        private void ChkAutoLogin_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ChkRemember != null)
+            {
                 ChkRemember.IsChecked = true;
             }
         }
+
+        // 自动登录
+        private async Task PerformLogin(string account, string password, bool isAuto)
+        {
+            BtnLogin.IsEnabled = false;
+            TxtStatus.Text = "正在自动登录...";
+
+            var result = await _apiService.LoginAsync(account, password);
+            if (result != null && result.Success)
+            {
+                MainWindow main = new MainWindow();
+                main.Show();
+                this.Close();
+            }
+            else
+            {
+                BtnLogin.IsEnabled = true;
+                TxtStatus.Text = isAuto ? "自动登录失败，请手动登录" : $"登录失败：{result?.Message}";
+            }
+        }
+
+       
+        
 
         // 登录校验
         private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
             string account = TxtAccount.Text.Trim();
             string password = TxtPassword.Password;
+            bool isAutoLogin = ChkAutoLogin.IsChecked ?? false;
             bool isRemember = ChkRemember.IsChecked ?? false;
+
+            if (isAutoLogin)
+            {
+                isRemember = true;
+            }
 
             if (string.IsNullOrWhiteSpace(account) || string.IsNullOrWhiteSpace(password))
             {
@@ -74,14 +125,7 @@ namespace MoboxFrpGUI
 
             if (result != null && result.Success)
             {
-                if (isRemember)
-                {
-                    ConfigService.SaveConfig(account, password, true);
-                }
-                else
-                {
-                    ConfigService.SaveConfig(string.Empty, string.Empty, false);
-                }
+                ConfigService.SaveConfig(account, password, isRemember, isAutoLogin);
 
                 TxtStatus.Text = "登录成功！正在跳转……";
                 TxtStatus.Foreground = System.Windows.Media.Brushes.Green;

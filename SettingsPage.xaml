@@ -16,29 +16,20 @@
                 </xa:SimpleStackPanel>
 
                 <xa:SimpleStackPanel Spacing="12">
-                    <TextBlock Text="个性化" FontSize="18" FontWeight="SemiBold" 
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="6" Padding="16">
+                    <TextBlock Text="个性化" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-
                             <ui:FontIcon Glyph="&#xE790;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
-
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock Text="应用主题" FontWeight="SemiBold" FontSize="14"/>
                                 <TextBlock Text="选择你喜欢的界面颜色模式" Opacity="0.6" FontSize="12"/>
                             </StackPanel>
-
-                            <ComboBox x:Name="ThemeComboBox" Grid.Column="2" Width="160" 
-                                      VerticalAlignment="Center"
-                                      SelectionChanged="ThemeComboBox_SelectionChanged">
+                            <ComboBox x:Name="ThemeComboBox" Grid.Column="2" Width="160" VerticalAlignment="Center" SelectionChanged="ThemeComboBox_SelectionChanged">
                                 <ComboBoxItem Content="跟随系统" Tag="Default"/>
                                 <ComboBoxItem Content="浅色模式" Tag="Light"/>
                                 <ComboBoxItem Content="深色模式" Tag="Dark"/>
@@ -47,48 +38,56 @@
                     </Border>
                 </xa:SimpleStackPanel>
 
-                <Separator Opacity="0.3"/>
+                <xa:SimpleStackPanel Spacing="12">
+                    <TextBlock Text="账户设置" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:FontIcon Glyph="&#xE77B;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="自动登录" FontWeight="SemiBold" FontSize="14"/>
+                                <TextBlock Text="启动程序时自动使用保存的凭据登录" Opacity="0.6" FontSize="12"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:ToggleSwitch x:Name="ToggleAutoLogin" Toggled="ToggleAutoLogin_Toggled" Margin="0,0,12,0"/>
+                                <Button x:Name="BtnLogout" Content="退出登录" Click="Logout_Click" 
+                                        Style="{StaticResource AccentButtonStyle}" 
+                                        Foreground="Red" Background="Transparent" BorderBrush="Red"
+                                        Padding="12,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </xa:SimpleStackPanel>
 
                 <xa:SimpleStackPanel Spacing="12">
-                    <TextBlock Text="关于" FontSize="18" FontWeight="SemiBold" 
-                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="6" Padding="16">
-                        <StackPanel>
+                    <TextBlock Text="关于" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
+                        <xa:SimpleStackPanel Spacing="8">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-
                                 <ui:FontIcon Glyph="&#xE946;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
-
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="MoboxFrp GUI" FontWeight="SemiBold" FontSize="14"/>
                                     <TextBlock Text="{Binding Source={StaticResource AppVersion}, StringFormat='版本 {0}'}" Opacity="0.6" FontSize="12"/>
                                 </StackPanel>
-
-                                <Button x:Name="CheckUpdateBtn" Content="检查更新" Grid.Column="2" VerticalAlignment="Center"
-                                        Style="{StaticResource AccentButtonStyle}" Click="CheckUpdateBtn_Click"/>
+                                <Button x:Name="CheckUpdateBtn" Content="检查更新" Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource AccentButtonStyle}" Click="CheckUpdateBtn_Click"/>
                             </Grid>
-
-                            <Separator Margin="0,12" Opacity="0.3"/>
-
-                            <xa:SimpleStackPanel Spacing="8">
-                                <TextBlock Text="项目说明" FontWeight="SemiBold" FontSize="14"/>
-                                <TextBlock Text="本程序为 MoboxFrp 社区贡献版，由社区开发者维护" 
-                                           TextWrapping="Wrap" Opacity="0.8" FontSize="12" LineHeight="18"/>
-
-                                <xa:SimpleStackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
-                                    <Button Content="免责声明" Click="ShowDisclaimer_Click" Padding="12,4"/>
-                                    <TextBlock Text="Community Contributed | Not Affiliated with Mobox Management" 
-                                               VerticalAlignment="Center" FontSize="10" Opacity="0.4"/>
-                                </xa:SimpleStackPanel>
+                            <Separator Margin="0,4" Opacity="0.3"/>
+                            <TextBlock Text="项目说明" FontWeight="SemiBold" FontSize="14" Margin="0,4,0,0"/>
+                            <TextBlock Text="本程序为 MoboxFrp 社区贡献版，由社区开发者维护" TextWrapping="Wrap" Opacity="0.8" FontSize="12" LineHeight="18"/>
+                            <xa:SimpleStackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
+                                <Button Content="免责声明" Click="ShowDisclaimer_Click" Padding="12,4"/>
+                                <TextBlock Text="Community Contributed | Not Affiliated with Mobox Management" VerticalAlignment="Center" FontSize="10" Opacity="0.4"/>
                             </xa:SimpleStackPanel>
-                        </StackPanel>
+                        </xa:SimpleStackPanel>
                     </Border>
                 </xa:SimpleStackPanel>
 

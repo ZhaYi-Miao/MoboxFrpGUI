@@ -11,6 +11,7 @@ namespace MoboxFrpGUI.Services
         public string Account { get; set; }
         public string Password { get; set; }
         public bool RememberMe { get; set; }
+        public bool AutoLogin { get; set; }
     }
 
     // 利用windows账号的凭据直接处理保存的登录信息
@@ -19,11 +20,11 @@ namespace MoboxFrpGUI.Services
         private static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "user.dat");
         private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("MoboxFrp_zhayi");
 
-        public static void SaveConfig(string account, string password, bool remember)
+        public static void SaveConfig(string account, string password, bool remember, bool autoLogin)
         {
             try
             {
-                var config = new UserConfig { Account = account, Password = password, RememberMe = remember };
+                var config = new UserConfig { Account = account, Password = password, RememberMe = remember, AutoLogin = autoLogin };
                 string json = JsonSerializer.Serialize(config);
                 byte[] data = Encoding.UTF8.GetBytes(json);
                 byte[] encryptedData = ProtectedData.Protect(data, Entropy, DataProtectionScope.CurrentUser);

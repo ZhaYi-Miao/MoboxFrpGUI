@@ -1,7 +1,7 @@
 # MoboxFrpGUI 🚀
 
 [![License](https://img.shields.io/badge/License-GPL%20v3.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Release-v1.0.0-green.svg)](https://github.com/ZhaYi-Miao/MoboxFrpGUI/releases)
+[![Version](https://img.shields.io/badge/Release-v1.0.2-green.svg)](https://github.com/ZhaYi-Miao/MoboxFrpGUI/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-orange.svg)]()
 [![Framework](https://img.shields.io/badge/Framework-.NET%208-512bd4.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
 

@@ -24,7 +24,13 @@
             <CheckBox x:Name="ChkRemember" 
                       Content="记住密码" 
                       Margin="0,0,0,15" 
-                      FontSize="12"/>   
+                      FontSize="12"
+                      Unchecked="ChkRemember_Unchecked"/>   
+            <CheckBox x:Name="ChkAutoLogin" 
+                      Content="启动时自动登录" 
+                      Margin="0,0,0,15" 
+                      FontSize="12"
+                      Checked="ChkAutoLogin_Checked"/>
 
             <Button x:Name="BtnLogin" 
                     Content="登 录" 

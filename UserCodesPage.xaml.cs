@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -573,6 +573,15 @@ namespace MoboxFrpGUI
                     Content = $"隧道 [{uniqueName}] 已就绪。\n本地 {lpt} -> 远程 {rpt}",
                     PrimaryButtonText = "确定"
                 }.ShowAsync();
+
+                var newTunnel = new TunnelItem
+                {
+                    Name = uniqueName,
+                    ConfigPath = configPath,
+                    IsRunning = false
+                };
+                newTunnel.ParseConfig();
+                App.GlobalTunnelList.Add(newTunnel);
 
             }
             catch (Exception ex)

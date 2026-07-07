@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -19,7 +19,7 @@
 	<RepositoryUrl>https://github.com/ZhaYi-Miao/MoboxFrpGUI</RepositoryUrl>
 	<SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
 	<PackageIcon>logo.jpg</PackageIcon>
-	<FileVersion>1.0.3</FileVersion>
+	<FileVersion>1.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

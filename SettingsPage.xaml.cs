@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Net.Http;
@@ -31,7 +31,6 @@ namespace MoboxFrpGUI
             }
             else
             {
-                // 默认关闭
                 ToggleAutoLogin.IsOn = false;
             }
         }
@@ -39,8 +38,6 @@ namespace MoboxFrpGUI
         // 读取当前设置的主题
         private void LoadCurrentTheme()
         {
-            
-            var actualTheme = ThemeManager.Current.ActualApplicationTheme;
             var settingTheme = ThemeManager.Current.ApplicationTheme;
 
             if (settingTheme == null)
@@ -61,14 +58,13 @@ namespace MoboxFrpGUI
             {
                 string tag = selectedItem.Tag?.ToString();
 
-                if (tag == "Default") // 默认就是选择跟随系统
+                if (tag == "Default")
                 {
                     ThemeManager.Current.ApplicationTheme = null;
                     SyncThemeWithSystem();
                 }
                 else
                 {
-                    // 用户手动选择了浅色或深色
                     ThemeManager.Current.ApplicationTheme = tag == "Light"
                         ? ApplicationTheme.Light
                         : ApplicationTheme.Dark;
@@ -89,7 +85,6 @@ namespace MoboxFrpGUI
                         var registryValue = key.GetValue("AppsUseLightTheme");
                         if (registryValue is int lightThemeValue)
                         {
-                            // 强制设置对应颜色
                             ThemeManager.Current.ApplicationTheme = (lightThemeValue == 0)
                                 ? ApplicationTheme.Dark
                                 : ApplicationTheme.Light;
@@ -98,9 +93,8 @@ namespace MoboxFrpGUI
                     }
                 }
             }
-            catch 
+            catch
             {
-                // 以后加一个log功能罢 不急
             }
         }
 
@@ -111,7 +105,6 @@ namespace MoboxFrpGUI
             var config = ConfigService.LoadConfig() ?? new UserConfig();
             config.AutoLogin = ToggleAutoLogin.IsOn;
 
-            // 强制联动：自动登录开启时，记住密码必须开启
             if (config.AutoLogin) config.RememberMe = true;
 
             ConfigService.SaveConfig(config.Account, config.Password, config.RememberMe, config.AutoLogin);
@@ -119,21 +112,17 @@ namespace MoboxFrpGUI
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            // 1. 清除配置
             ConfigService.SaveConfig("", "", false, false);
 
-            // 2. 找到主窗口并开启强制关闭标志
             var mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {
                 mainWindow.IsForceClosing = true;
             }
 
-            // 3. 打开登录窗口
             LoginWindow login = new LoginWindow();
             login.Show();
 
-            // 4. 关闭主窗口
             mainWindow?.Close();
         }
 
@@ -147,13 +136,13 @@ namespace MoboxFrpGUI
             }
         }
 
-        // 检查更新逻辑
+        // 检查更新
         private void CheckUpdateBtn_Click(object sender, RoutedEventArgs e)
         {
             ContentDialog updateDialog = new ContentDialog
             {
                 Title = "检查更新",
-                Content = "当前版本 (1.0.3) 已经是最新版本 \n实际上没有写任何检查更新的代码（ \n去github仓库下载吧喵",
+                Content = "当前版本 (1.1.0) 已经是最新版本\n实际上没有写任何检查更新的代码（\n去 GitHub 仓库下载吧喵",
                 CloseButtonText = "确定",
                 DefaultButton = ContentDialogButton.Close
             };
@@ -169,13 +158,27 @@ namespace MoboxFrpGUI
                 Content = new TextBlock
                 {
                     Text = "1. 本程序由社区成员（ZhaYi）自发贡献，不属于 MoboxFrp 官方开发的产品\n" +
-                           "2. MoboxFrp 官方不提供有关于该软件的任何技术支持\n" ,
+                           "2. MoboxFrp 官方不提供有关于该软件的任何技术支持\n",
                     TextWrapping = TextWrapping.Wrap
                 },
                 CloseButtonText = "我已了解风险",
                 DefaultButton = ContentDialogButton.Close
             };
             _ = disclaimerDialog.ShowAsync();
+        }
+
+        // 打开GitHub仓库
+        private void OpenGitHub_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://github.com/ZhaYi-Miao/MoboxFrpGUI",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<Application x:Class="MoboxFrpGUI.App"
+<Application x:Class="MoboxFrpGUI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
@@ -27,7 +27,7 @@
 
             </ResourceDictionary.MergedDictionaries>
 
-            <System:String x:Key="AppVersion">1.0.3 Release</System:String>
+            <System:String x:Key="AppVersion">1.1.0 Release</System:String>
 
             <services:InvertBooleanConverter x:Key="InvertBooleanConverter" />
             <BooleanToVisibilityConverter x:Key="BoolToVis" />

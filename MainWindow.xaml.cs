@@ -1,9 +1,10 @@
-﻿using System.Windows;
+using System.Windows;
 using MoboxFrpGUI.Services;
 using MoboxFrpGUI.Pages;
 using iNKORE.UI.WPF.Modern.Controls;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Modern = iNKORE.UI.WPF.Modern.Controls;
 using Forms = System.Windows.Forms;
 
@@ -25,7 +26,7 @@ namespace MoboxFrpGUI
             if (NavView.MenuItems.Count > 0)
                 NavView.SelectedItem = NavView.MenuItems[0];
 
-            LoadUserInfoAsync();
+            InitializeUserInfo();
         }
 
         // 系统托盘
@@ -68,22 +69,36 @@ namespace MoboxFrpGUI
 
 
         // 侧边栏用户信息（仅在开启时更新
-        private async void LoadUserInfoAsync()
+        private async Task LoadUserInfoAsync()
         {
-            var info = await _apiService.PostWithTokenAsync<UserInfoResponse>("UserInfo");
-            if (info != null && info.success)
+            try
             {
-                TxtUserName.Text = info.username;
-                TxtBalance.Text = $"金币: {info.gold} | 银币: {info.silver}";
-                if (UserPane.Icon is PersonPicture avatar)
+                var info = await _apiService.PostWithTokenAsync<UserInfoResponse>("UserInfo");
+                if (info != null && info.success)
                 {
-                    avatar.DisplayName = info.username;
+                    TxtUserName.Text = info.username;
+                    TxtBalance.Text = $"金币: {info.gold} | 银币: {info.silver}";
+                    if (UserPane.Icon is PersonPicture avatar)
+                    {
+                        avatar.DisplayName = info.username;
+                    }
+                }
+                else
+                {
+                    TxtUserName.Text = "获取失败喵";
                 }
             }
-            else
+            catch (Exception ex)
             {
-                TxtUserName.Text = "获取失败喵";
+                TxtUserName.Text = "网络错误";
+                Debug.WriteLine($"加载用户信息失败: {ex.Message}");
             }
+        }
+
+        // 在构造函数中调用异步方法
+        private async void InitializeUserInfo()
+        {
+            await LoadUserInfoAsync();
         }
 
         // 侧边栏跳转逻辑
@@ -127,44 +142,61 @@ namespace MoboxFrpGUI
 
 
         // 退出程序拦截
-
         protected override async void OnClosing(CancelEventArgs e)
         {
+            // 如果已经在退出流程中，直接退出
             if (_isExiting)
             {
                 base.OnClosing(e);
                 return;
             }
 
+            // 如果强制关闭标志已设置，直接退出
             if (IsForceClosing)
             {
+                _isExiting = true;
+                ShutdownAndCleanup();
                 base.OnClosing(e);
                 return;
             }
 
+            // 取消关闭事件，等待用户确认
             e.Cancel = true;
 
-            var dialog = new Modern.ContentDialog
+            try
             {
-                Title = "退出确认",
-                Content = "您想要彻底关闭 MoboxFrp 吗？\n选择“最小化”将保持隧道在后台运行。",
-                PrimaryButtonText = "彻底退出",
-                SecondaryButtonText = "最小化到托盘",
-                CloseButtonText = "取消",
-                DefaultButton = Modern.ContentDialogButton.Secondary
-            };
+                var dialog = new Modern.ContentDialog
+                {
+                    Title = "退出确认",
+                    Content = "您想要彻底关闭 MoboxFrp 吗？\n选择\"最小化\"将保持隧道在后台运行。",
+                    PrimaryButtonText = "彻底退出",
+                    SecondaryButtonText = "最小化到托盘",
+                    CloseButtonText = "取消",
+                    DefaultButton = Modern.ContentDialogButton.Secondary
+                };
 
-            var result = await dialog.ShowAsync();
+                var result = await dialog.ShowAsync();
 
-            if (result == Modern.ContentDialogResult.Primary)
-            {
-                _isExiting = true;
-                ShutdownAndCleanup();
+                if (result == Modern.ContentDialogResult.Primary)
+                {
+                    _isExiting = true;
+                    e.Cancel = false; // 允许关闭
+                    ShutdownAndCleanup();
+                }
+                else if (result == Modern.ContentDialogResult.Secondary)
+                {
+                    this.Hide();
+                    _notifyIcon.ShowBalloonTip(3000, "MoboxFrp", "已最小化到系统托盘", Forms.ToolTipIcon.Info);
+                }
+                // Cancel按钮不做任何操作，窗口保持打开状态
             }
-            else if (result == Modern.ContentDialogResult.Secondary)
+            catch (Exception ex)
             {
-                this.Hide();
-                _notifyIcon.ShowBalloonTip(3000, "MoboxFrp", "已最小化到系统托盘", Forms.ToolTipIcon.Info);
+                Debug.WriteLine($"关闭确认对话框失败: {ex.Message}");
+                // 如果对话框失败，允许关闭
+                _isExiting = true;
+                e.Cancel = false;
+                ShutdownAndCleanup();
             }
         }
 
@@ -172,39 +204,67 @@ namespace MoboxFrpGUI
         private void ShutdownAndCleanup()
         {
             this.Hide();
+
+            // 停止所有隧道
             if (App.GlobalTunnelList != null)
             {
                 var tunnels = App.GlobalTunnelList.ToList();
                 foreach (var tunnel in tunnels)
                 {
-                    tunnel?.Stop();
+                    try
+                    {
+                        tunnel?.Stop();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"停止隧道 {tunnel?.Name} 失败: {ex.Message}");
+                    }
                 }
             }
-            // 编诗环节（
-            // KillAllFrpProcesses();
 
-            _notifyIcon?.Dispose();
+            // 清理可能残留的frpc进程（安全检查）
+            KillAllFrpProcesses();
+
+            // 清理托盘图标
+            try
+            {
+                _notifyIcon?.Dispose();
+            }
+            catch { }
+
             System.Windows.Application.Current.Shutdown();
         }
-         /*
-        // 根据进程名字补刀
+
+        // 根据进程名字清理残留的frpc进程
         private void KillAllFrpProcesses()
         {
             try
             {
+                // 只清理当前用户启动的frpc进程，避免影响其他用户的进程
                 var frpProcesses = Process.GetProcesses()
                     .Where(p => p.ProcessName.Contains("frpc", StringComparison.OrdinalIgnoreCase));
 
                 foreach (var p in frpProcesses)
                 {
-                     p.Kill(true);
-                     p.Dispose();
+                    try
+                    {
+                        // 尝试优雅关闭
+                        if (!p.WaitForExit(2000))
+                        {
+                            p.Kill(true);
+                        }
+                        p.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"清理进程 {p.Id} 失败: {ex.Message}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"frpc退出可能异常: {ex.Message}");
+                Debug.WriteLine($"frpc进程清理异常: {ex.Message}");
             }
-        }*/
+        }
     }
 }

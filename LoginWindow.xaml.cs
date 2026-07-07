@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using MoboxFrpGUI.Services;
 using System.Text.RegularExpressions;
@@ -125,7 +125,11 @@ namespace MoboxFrpGUI
 
             if (result != null && result.Success)
             {
-                ConfigService.SaveConfig(account, password, isRemember, isAutoLogin);
+                bool saveSuccess = ConfigService.SaveConfig(account, password, isRemember, isAutoLogin);
+                if (!saveSuccess)
+                {
+                    System.Diagnostics.Debug.WriteLine("保存登录信息失败，下次需要手动登录");
+                }
 
                 TxtStatus.Text = "登录成功！正在跳转……";
                 TxtStatus.Foreground = System.Windows.Media.Brushes.Green;

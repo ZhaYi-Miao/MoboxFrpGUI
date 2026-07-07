@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -17,10 +18,7 @@ namespace MoboxFrpGUI
             TunnelsItemsControl.ItemsSource = App.GlobalTunnelList;
 
             Loaded += (s, e) => {
-                if (App.GlobalTunnelList.Count == 0)
-                {
-                    LoadLocalTunnels();
-                }
+                LoadLocalTunnels();
             };
         }
 
@@ -31,7 +29,6 @@ namespace MoboxFrpGUI
                 string tunnelRootDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MoBoxFrp", "Tunnels");
                 if (!Directory.Exists(tunnelRootDir)) Directory.CreateDirectory(tunnelRootDir);
 
-                App.GlobalTunnelList.Clear();
                 var tunnelFolders = Directory.GetDirectories(tunnelRootDir);
 
                 foreach (var dir in tunnelFolders)
@@ -41,14 +38,18 @@ namespace MoboxFrpGUI
 
                     if (File.Exists(configPath))
                     {
-                        var item = new TunnelItem
+                        bool exists = App.GlobalTunnelList.Any(t => t.Name == name);
+                        if (!exists)
                         {
-                            Name = name,
-                            ConfigPath = configPath,
-                            IsRunning = false
-                        };
-                        item.ParseConfig();
-                        App.GlobalTunnelList.Add(item);
+                            var item = new TunnelItem
+                            {
+                                Name = name,
+                                ConfigPath = configPath,
+                                IsRunning = false
+                            };
+                            item.ParseConfig();
+                            App.GlobalTunnelList.Add(item);
+                        }
                     }
                 }
             }
@@ -184,15 +185,27 @@ namespace MoboxFrpGUI
                 {
                     try
                     {
-                        if (item.IsRunning) item.Stop();
-                        await Task.Delay(500);
+                        if (item.IsRunning)
+                        {
+                            item.Stop();
+                            await Task.Delay(800);
+                        }
 
                         string tunnelDir = Path.GetDirectoryName(item.ConfigPath);
                         if (Directory.Exists(tunnelDir))
                         {
                             Directory.Delete(tunnelDir, true);
                         }
-                        App.GlobalTunnelList.Remove(item);
+
+                        bool removed = App.GlobalTunnelList.Remove(item);
+                        if (!removed)
+                        {
+                            var found = App.GlobalTunnelList.FirstOrDefault(t => t.Name == item.Name);
+                            if (found != null)
+                            {
+                                App.GlobalTunnelList.Remove(found);
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {

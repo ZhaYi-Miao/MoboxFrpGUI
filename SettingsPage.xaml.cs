@@ -6,6 +6,8 @@ using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 using MoboxFrpGUI.Services;
+using System.Diagnostics;
+using WpfClipboard = System.Windows.Clipboard;
 
 namespace MoboxFrpGUI
 {
@@ -18,7 +20,26 @@ namespace MoboxFrpGUI
             InitializeComponent();
             LoadCurrentTheme();
             LoadSettingsState();
+            LoadLastException();
             _isInitialized = true;
+        }
+
+        private void LoadLastException()
+        {
+            RefreshErrorDetail();
+        }
+
+        public void RefreshErrorDetail()
+        {
+            if (!string.IsNullOrEmpty(App.LastExceptionReport))
+            {
+                ErrorDetailTextBox.Text = App.LastExceptionReport;
+                ErrorDetailPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ErrorDetailPanel.Visibility = Visibility.Collapsed;
+            }
         }
 
         // 同步设置里面所有的开关状态
@@ -142,7 +163,7 @@ namespace MoboxFrpGUI
             ContentDialog updateDialog = new ContentDialog
             {
                 Title = "检查更新",
-                Content = "当前版本 (1.1.0) 已经是最新版本\n实际上没有写任何检查更新的代码（\n去 GitHub 仓库下载吧喵",
+                Content = "当前版本 (1.1.1) 已经是最新版本\n实际上没有写任何检查更新的代码（\n去 GitHub 仓库下载吧喵",
                 CloseButtonText = "确定",
                 DefaultButton = ContentDialogButton.Close
             };
@@ -172,13 +193,47 @@ namespace MoboxFrpGUI
         {
             try
             {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                Process.Start(new ProcessStartInfo
                 {
                     FileName = "https://github.com/ZhaYi-Miao/MoboxFrpGUI",
                     UseShellExecute = true
                 });
             }
             catch { }
+        }
+
+        private void OpenLogDir_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string logDir = LogService.LogDirectory;
+                if (!string.IsNullOrEmpty(logDir))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = logDir,
+                        UseShellExecute = true
+                    });
+                }
+            }
+            catch { }
+        }
+
+        private void CopyErrorDetail_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WpfClipboard.SetText(ErrorDetailTextBox.Text);
+                NotificationService.Show("已复制到剪贴板", NotificationType.Info, 2000);
+            }
+            catch { }
+        }
+
+        private void ClearErrorDetail_Click(object sender, RoutedEventArgs e)
+        {
+            App.LastExceptionReport = "";
+            ErrorDetailTextBox.Text = "";
+            ErrorDetailPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

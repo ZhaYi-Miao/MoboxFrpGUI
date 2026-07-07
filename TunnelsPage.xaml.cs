@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -24,39 +23,7 @@ namespace MoboxFrpGUI
 
         private void LoadLocalTunnels()
         {
-            try
-            {
-                string tunnelRootDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MoBoxFrp", "Tunnels");
-                if (!Directory.Exists(tunnelRootDir)) Directory.CreateDirectory(tunnelRootDir);
-
-                var tunnelFolders = Directory.GetDirectories(tunnelRootDir);
-
-                foreach (var dir in tunnelFolders)
-                {
-                    string name = Path.GetFileName(dir);
-                    string configPath = Path.Combine(dir, "config.toml");
-
-                    if (File.Exists(configPath))
-                    {
-                        bool exists = App.GlobalTunnelList.Any(t => t.Name == name);
-                        if (!exists)
-                        {
-                            var item = new TunnelItem
-                            {
-                                Name = name,
-                                ConfigPath = configPath,
-                                IsRunning = false
-                            };
-                            item.ParseConfig();
-                            App.GlobalTunnelList.Add(item);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("加载隧道失败: " + ex.Message);
-            }
+            App.LoadAndDetectAllTunnels();
         }
 
         // 启动

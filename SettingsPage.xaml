@@ -102,6 +102,71 @@
                     </Border>
                 </xa:SimpleStackPanel>
 
+                <!-- 调试 -->
+                <xa:SimpleStackPanel Spacing="12">
+                    <TextBlock Text="调试" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="16">
+                        <xa:SimpleStackPanel Spacing="16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:FontIcon Glyph="&#xE8B7;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="日志目录" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="打开日志文件所在目录" Opacity="0.6" FontSize="12"/>
+                                </StackPanel>
+                                <Button Grid.Column="2" Content="打开" Click="OpenLogDir_Click" Height="32" Padding="16,0"
+                                        ui:ControlHelper.CornerRadius="4"/>
+                            </Grid>
+
+                            <!-- 错误详情（有异常时自动显示） -->
+                            <Grid x:Name="ErrorDetailPanel" Visibility="Collapsed">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <ui:FontIcon Glyph="&#xE7BA;" FontSize="20" VerticalAlignment="Center" Margin="0,12,16,0" Grid.Row="0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Grid.Row="0" Margin="0,12,0,0">
+                                    <TextBlock Text="最近捕获的异常" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="点击通知跳转后在此处查看详情" Opacity="0.6" FontSize="12"/>
+                                </StackPanel>
+
+                                <Border Grid.Row="1"
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
+                                    <TextBox x:Name="ErrorDetailTextBox"
+                                             IsReadOnly="True"
+                                             TextWrapping="Wrap"
+                                             VerticalScrollBarVisibility="Auto"
+                                             HorizontalScrollBarVisibility="Disabled"
+                                             FontFamily="Consolas, Cascadia Mono, monospace"
+                                             FontSize="12"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                             MaxHeight="300"/>
+                                </Border>
+
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                    <Button Content="复制详情" Click="CopyErrorDetail_Click" Height="32" Padding="16,0"
+                                            ui:ControlHelper.CornerRadius="4" Margin="0,0,10,0"/>
+                                    <Button Content="清除" Click="ClearErrorDetail_Click" Height="32" Padding="16,0"
+                                            ui:ControlHelper.CornerRadius="4"/>
+                                </StackPanel>
+                            </Grid>
+                        </xa:SimpleStackPanel>
+                    </Border>
+                </xa:SimpleStackPanel>
+
                 <!-- 关于 -->
                 <xa:SimpleStackPanel Spacing="12">
                     <TextBlock Text="关于" FontSize="18" FontWeight="SemiBold"

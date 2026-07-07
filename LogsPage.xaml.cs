@@ -25,7 +25,17 @@ namespace MoboxFrpGUI
             App.GlobalTunnelList.CollectionChanged += GlobalTunnelList_CollectionChanged;
             Loaded += (s, e) => {
                 UpdateEmptyHint();
-                TrySelectFirstTunnel();
+
+                if (!string.IsNullOrEmpty(App.PendingToastTunnelName))
+                {
+                    string name = App.PendingToastTunnelName;
+                    App.PendingToastTunnelName = null;
+                    SelectTunnelByName(name);
+                }
+                else
+                {
+                    TrySelectFirstTunnel();
+                }
             };
         }
 
@@ -168,7 +178,14 @@ namespace MoboxFrpGUI
             try
             {
                 if (LogRichTextBox.IsFocused) return;
-                LogRichTextBox.ScrollToEnd();
+                LogRichTextBox.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, () =>
+                {
+                    try
+                    {
+                        LogRichTextBox.ScrollToEnd();
+                    }
+                    catch { }
+                });
             }
             catch { }
         }
@@ -228,6 +245,18 @@ namespace MoboxFrpGUI
                 LogContentBorder.Visibility = Visibility.Collapsed;
                 EmptyHint.Visibility = Visibility.Visible;
                 CurrentTunnelName.Text = "未选择隧道";
+            }
+        }
+
+        public void SelectTunnelByName(string tunnelName)
+        {
+            if (string.IsNullOrEmpty(tunnelName)) return;
+            if (App.GlobalTunnelList == null) return;
+
+            var tunnel = App.GlobalTunnelList.FirstOrDefault(t => t.Name == tunnelName);
+            if (tunnel != null)
+            {
+                SelectTunnel(tunnel);
             }
         }
 

@@ -40,6 +40,16 @@
                     HorizontalAlignment="Stretch" 
                     Height="35"/>
 
+            <Button x:Name="BtnOfflineLogin"
+                    Content="离线登录"
+                    Click="BtnOfflineLogin_Click"
+                    IsEnabled="False"
+                    Visibility="Collapsed"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    HorizontalAlignment="Stretch"
+                    Height="35"
+                    Margin="0,10,0,0"/>
+
             <TextBlock x:Name="TxtStatus" 
                        Foreground="Red" 
                        Margin="0,10,0,0" 

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using MoboxFrpGUI.Services;
+using MoboxFrpGUI.Models;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.IO;
@@ -84,13 +85,26 @@ namespace MoboxFrpGUI
             if (result != null && result.Success)
             {
                 MainWindow main = new MainWindow();
+                System.Windows.Application.Current.MainWindow = main;
                 main.Show();
+                main.CheckSurvivingProcesses();
                 this.Close();
             }
             else
             {
                 BtnLogin.IsEnabled = true;
-                TxtStatus.Text = isAuto ? "自动登录失败，请手动登录" : $"登录失败：{result?.Message}";
+                
+                bool isNetworkError = IsNetworkError(result);
+                if (isNetworkError)
+                {
+                    TxtStatus.Text = isAuto ? "自动登录失败（网络错误）" : $"登录失败：网络错误";
+                    ShowOfflineLoginButton();
+                }
+                else
+                {
+                    TxtStatus.Text = isAuto ? "自动登录失败，请手动登录" : $"登录失败：{result?.Message}";
+                    HideOfflineLoginButton();
+                }
             }
         }
 
@@ -114,12 +128,14 @@ namespace MoboxFrpGUI
             {
                 TxtStatus.Text = "请输入完整的账号和密码";
                 TxtStatus.Foreground = System.Windows.Media.Brushes.Red;
+                HideOfflineLoginButton();
                 return;
             }
 
             BtnLogin.IsEnabled = false;
             TxtStatus.Text = "正在连接 MoBoxFrp 服务器...";
             TxtStatus.Foreground = System.Windows.Media.Brushes.Gray;
+            HideOfflineLoginButton();
 
             var result = await _apiService.LoginAsync(account, password);
 
@@ -137,7 +153,9 @@ namespace MoboxFrpGUI
                 await Task.Delay(800);
 
                 MainWindow main = new MainWindow();
+                System.Windows.Application.Current.MainWindow = main;
                 main.Show();
+                main.CheckSurvivingProcesses();
                 this.Close();
             }
             else
@@ -145,9 +163,50 @@ namespace MoboxFrpGUI
                 BtnLogin.IsEnabled = true;
                 TxtStatus.Foreground = System.Windows.Media.Brushes.Red;
 
-                string errorDetail = result?.Message ?? "网络异常或服务器无响应";
-                TxtStatus.Text = $"登录失败：{errorDetail}";
+                bool isNetworkError = IsNetworkError(result);
+                if (isNetworkError)
+                {
+                    TxtStatus.Text = "登录失败：网络错误，请检查网络连接";
+                    ShowOfflineLoginButton();
+                }
+                else
+                {
+                    string errorDetail = result?.Message ?? "未知错误";
+                    TxtStatus.Text = $"登录失败：{errorDetail}";
+                    HideOfflineLoginButton();
+                }
             }
+        }
+
+        private bool IsNetworkError(LoginResponse result)
+        {
+            if (result == null) return true;
+
+            string msg = result.Message?.ToLower() ?? "";
+            return msg.Contains("网络") || msg.Contains("ssl") || msg.Contains("tls") || 
+                   msg.Contains("超时") || msg.Contains("refused") || msg.Contains("timed");
+        }
+
+        private void ShowOfflineLoginButton()
+        {
+            BtnOfflineLogin.Visibility = Visibility.Visible;
+            BtnOfflineLogin.IsEnabled = true;
+        }
+
+        private void HideOfflineLoginButton()
+        {
+            BtnOfflineLogin.Visibility = Visibility.Collapsed;
+            BtnOfflineLogin.IsEnabled = false;
+        }
+
+        private void BtnOfflineLogin_Click(object sender, RoutedEventArgs e)
+        {
+            ApiService.CurrentToken = "";
+            MainWindow main = new MainWindow();
+            System.Windows.Application.Current.MainWindow = main;
+            main.Show();
+            main.CheckSurvivingProcesses();
+            this.Close();
         }
     }
 }

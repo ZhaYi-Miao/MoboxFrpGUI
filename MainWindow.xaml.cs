@@ -20,6 +20,7 @@ namespace MoboxFrpGUI
         public MainWindow()
         {
             InitializeComponent();
+            NotificationService.AlertPanel = uiAlert;
             InitNotifyIcon();
 
             NavView.SelectionChanged += NavView_SelectionChanged;
@@ -27,6 +28,14 @@ namespace MoboxFrpGUI
                 NavView.SelectedItem = NavView.MenuItems[0];
 
             InitializeUserInfo();
+
+            ToastService.OnTunnelToastClicked = OnTunnelToastClicked;
+        }
+
+        private void OnTunnelToastClicked(string tunnelName)
+        {
+            ShowMainWindow();
+            NavigateToLogs(tunnelName);
         }
 
         // 系统托盘
@@ -41,15 +50,65 @@ namespace MoboxFrpGUI
             }
             catch
             {
-                // 如果获取不到就用默认系统图标凑合
                 _notifyIcon.Icon = System.Drawing.SystemIcons.Application;
             }
 
             _notifyIcon.Visible = true;
             _notifyIcon.MouseDoubleClick += (s, e) => ShowMainWindow();
 
+            BuildTrayContextMenu();
+
+            App.GlobalTunnelList.CollectionChanged += GlobalTunnelList_CollectionChanged;
+        }
+
+        private void GlobalTunnelList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            {
+                foreach (var item in e.NewItems ?? Array.Empty<object>())
+                {
+                    if (item is Models.TunnelItem tunnel)
+                    {
+                        tunnel.PropertyChanged += Tunnel_PropertyChanged;
+                    }
+                }
+            }
+
+            Dispatcher.Invoke(() => BuildTrayContextMenu());
+        }
+
+        private void Tunnel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Models.TunnelItem.IsRunning))
+            {
+                Dispatcher.Invoke(() => BuildTrayContextMenu());
+            }
+        }
+
+        private void BuildTrayContextMenu()
+        {
             var contextMenu = new Forms.ContextMenuStrip();
             contextMenu.Items.Add("显示主界面", null, (s, e) => ShowMainWindow());
+
+            var runningTunnels = App.GlobalTunnelList.Where(t => t.IsRunning).ToList();
+            if (runningTunnels.Count > 0)
+            {
+                contextMenu.Items.Add(new Forms.ToolStripSeparator());
+
+                var tunnelsItem = new Forms.ToolStripMenuItem("运行中的隧道");
+                foreach (var tunnel in runningTunnels)
+                {
+                    var item = new Forms.ToolStripMenuItem(tunnel.Name);
+                    item.Click += (s, e) =>
+                    {
+                        ShowMainWindow();
+                        NavigateToLogs(tunnel.Name);
+                    };
+                    tunnelsItem.DropDownItems.Add(item);
+                }
+                contextMenu.Items.Add(tunnelsItem);
+            }
+
             contextMenu.Items.Add(new Forms.ToolStripSeparator());
             contextMenu.Items.Add("彻底退出", null, (s, e) =>
             {
@@ -101,6 +160,12 @@ namespace MoboxFrpGUI
             await LoadUserInfoAsync();
         }
 
+        public void CheckSurvivingProcesses()
+        {
+            Debug.WriteLine("[MainWindow] 开始加载隧道并检测残留进程...");
+            App.LoadAndDetectAllTunnels();
+        }
+
         // 侧边栏跳转逻辑
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -134,6 +199,40 @@ namespace MoboxFrpGUI
                 if (NavView.DisplayMode != NavigationViewDisplayMode.Expanded)
                 {
                     NavView.IsPaneOpen = false;
+                }
+            }
+        }
+
+        public void NavigateToSettings()
+        {
+            foreach (var item in NavView.FooterMenuItems)
+            {
+                if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Settings")
+                {
+                    NavView.SelectedItem = navItem;
+                    
+                    if (ContentFrame.Content is SettingsPage settingsPage)
+                    {
+                        settingsPage.RefreshErrorDetail();
+                    }
+                    return;
+                }
+            }
+        }
+
+        public void NavigateToLogs(string tunnelName = null)
+        {
+            if (!string.IsNullOrEmpty(tunnelName))
+            {
+                App.PendingToastTunnelName = tunnelName;
+            }
+
+            foreach (var item in NavView.MenuItems)
+            {
+                if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Logs")
+                {
+                    NavView.SelectedItem = navItem;
+                    return;
                 }
             }
         }
@@ -219,6 +318,20 @@ namespace MoboxFrpGUI
                     {
                         Debug.WriteLine($"停止隧道 {tunnel?.Name} 失败: {ex.Message}");
                     }
+                }
+
+                Task.Delay(500).Wait();
+
+                foreach (var tunnel in tunnels)
+                {
+                    try
+                    {
+                        if (tunnel != null && tunnel.IsRunning)
+                        {
+                            tunnel.SavePersistentLog(true);
+                        }
+                    }
+                    catch { }
                 }
             }
 

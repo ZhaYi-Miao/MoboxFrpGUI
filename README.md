@@ -1,9 +1,17 @@
-# MoboxFrpGUI 🚀
+# MoboxFrpGUI 
 
 [![License](https://img.shields.io/badge/License-GPL%20v3.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Release-v1.0.2-green.svg)](https://github.com/ZhaYi-Miao/MoboxFrpGUI/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-orange.svg)]()
 [![Framework](https://img.shields.io/badge/Framework-.NET%208-512bd4.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
+
+---
+
+如果你是 `MossFrp` 老玩家想继续使用命令行客户端 欢迎使用⬇️
+
+`MoBoxFrp 怀旧版命令行客户端` 链接：[https://github.com/ZhaYi-Miao/MoBoxFrpClient-WindowsBat](https://github.com/ZhaYi-Miao/MoBoxFrpClient-WindowsBat)
+
+---
 
 **MoboxFrpGUI** 是一款专为 Windows 设计的现代化内网穿透客户端。它集成了强大的 `frpc` 内核，拥有完美适配 Windows 11 的视觉界面，致力于提供“一键式”的内网穿透体验
 

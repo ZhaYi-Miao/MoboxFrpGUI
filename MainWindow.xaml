@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         xmlns:xa="http://schemas.inkore.net/lib/ui/wpf"
-        Title="MoboxFrpGUI v1.1.1" 
+        Title="MoboxFrpGUI v1.2.0" 
         Icon="pack://application:,,,/Resources/logo.ico"
         Width="1120" Height="700"
         MinWidth="1050" MinHeight="600"

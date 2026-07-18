@@ -215,6 +215,17 @@ namespace MoboxFrpGUI
         {
             try
             {
+                // 先读取用户保存的主题设置
+                var config = ConfigService.LoadConfig();
+                if (config != null && !string.IsNullOrEmpty(config.Theme) && config.Theme != "Default")
+                {
+                    ThemeManager.Current.ApplicationTheme = config.Theme == "Light"
+                        ? ApplicationTheme.Light
+                        : ApplicationTheme.Dark;
+                    return;
+                }
+
+                // 如果是 Default，跟随系统主题
                 ThemeManager.Current.ApplicationTheme = null;
                 
                 // 抽查一下注册表的系统主题设置是啥

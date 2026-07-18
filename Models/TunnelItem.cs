@@ -510,7 +510,8 @@ namespace MoboxFrpGUI.Models
                 var builder = new StringBuilder();
                 for (int i = 0; i < _logBuffer.Count; i++)
                 {
-                    builder.AppendLine(_logBuffer[i]);
+                    if (i > 0) builder.Append('\n');
+                    builder.Append(_logBuffer[i]);
                 }
 
                 FullLogText = builder.ToString();

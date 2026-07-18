@@ -1,13 +1,14 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Net.Http;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Page = iNKORE.UI.WPF.Modern.Controls.Page;
 using MoboxFrpGUI.Services;
 using System.Diagnostics;
 using WpfClipboard = System.Windows.Clipboard;
+using WpfButton = System.Windows.Controls.Button;
+using WpfHorizontalAlignment = System.Windows.HorizontalAlignment;
 
 namespace MoboxFrpGUI
 {
@@ -18,10 +19,17 @@ namespace MoboxFrpGUI
         public SettingsPage()
         {
             InitializeComponent();
+            LoadCurrentVersion();
             LoadCurrentTheme();
             LoadSettingsState();
             LoadLastException();
             _isInitialized = true;
+        }
+
+        private void LoadCurrentVersion()
+        {
+            string version = UpdateService.GetCurrentVersion();
+            VersionText.Text = $"版本 {version}";
         }
 
         private void LoadLastException()
@@ -49,10 +57,30 @@ namespace MoboxFrpGUI
             if (config != null)
             {
                 ToggleAutoLogin.IsOn = config.AutoLogin;
+                ToggleAutoCheckUpdate.IsOn = config.AutoCheckUpdate;
+                
+                // 加载主题设置
+                if (!string.IsNullOrEmpty(config.Theme))
+                {
+                    switch (config.Theme)
+                    {
+                        case "Light":
+                            ThemeComboBox.SelectedIndex = 1;
+                            break;
+                        case "Dark":
+                            ThemeComboBox.SelectedIndex = 2;
+                            break;
+                        default:
+                            ThemeComboBox.SelectedIndex = 0;
+                            break;
+                    }
+                }
             }
             else
             {
                 ToggleAutoLogin.IsOn = false;
+                ToggleAutoCheckUpdate.IsOn = true;
+                ThemeComboBox.SelectedIndex = 0;
             }
         }
 
@@ -78,6 +106,7 @@ namespace MoboxFrpGUI
             if (ThemeComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string tag = selectedItem.Tag?.ToString();
+                string themeValue = tag ?? "Default";
 
                 if (tag == "Default")
                 {
@@ -91,8 +120,17 @@ namespace MoboxFrpGUI
                         : ApplicationTheme.Dark;
                 }
 
+                // 保存主题设置
+                SaveThemeSetting(themeValue);
                 UpdateWindowBackdrop();
             }
+        }
+
+        private void SaveThemeSetting(string theme)
+        {
+            var config = ConfigService.LoadConfig() ?? new UserConfig();
+            config.Theme = theme;
+            ConfigService.SaveConfig(config);
         }
 
         private void SyncThemeWithSystem()
@@ -128,7 +166,16 @@ namespace MoboxFrpGUI
 
             if (config.AutoLogin) config.RememberMe = true;
 
-            ConfigService.SaveConfig(config.Account, config.Password, config.RememberMe, config.AutoLogin);
+            ConfigService.SaveConfig(config);
+        }
+
+        private void ToggleAutoCheckUpdate_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized) return;
+
+            var config = ConfigService.LoadConfig() ?? new UserConfig();
+            config.AutoCheckUpdate = ToggleAutoCheckUpdate.IsOn;
+            ConfigService.SaveConfig(config);
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
@@ -158,16 +205,236 @@ namespace MoboxFrpGUI
         }
 
         // 检查更新
-        private void CheckUpdateBtn_Click(object sender, RoutedEventArgs e)
+        private async void CheckUpdateBtn_Click(object sender, RoutedEventArgs e)
         {
-            ContentDialog updateDialog = new ContentDialog
+            CheckUpdateBtn.IsEnabled = false;
+            CheckUpdateBtn.Content = "检查中...";
+
+            try
             {
-                Title = "检查更新",
-                Content = "当前版本 (1.1.1) 已经是最新版本\n实际上没有写任何检查更新的代码（\n去 GitHub 仓库下载吧喵",
+                var updateInfo = await UpdateService.CheckForUpdateAsync();
+                string currentVersion = UpdateService.GetCurrentVersion();
+
+                if (updateInfo == null)
+                {
+                    await ShowUpdateDialog("检查更新", $"当前版本: {currentVersion}\n\n无法连接到 GitHub，请检查网络连接。");
+                    return;
+                }
+
+                if (!UpdateService.HasNewVersion(currentVersion, updateInfo.Version))
+                {
+                    await ShowUpdateDialog("检查更新", $"当前版本: {currentVersion}\n已经是最新版本！");
+                    return;
+                }
+
+                // 有新版本，显示更新信息
+                await ShowNewVersionDialog(currentVersion, updateInfo);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[更新] 检查异常: {ex.Message}");
+                await ShowUpdateDialog("检查更新", "检查更新时发生错误，请稍后重试。");
+            }
+            finally
+            {
+                CheckUpdateBtn.IsEnabled = true;
+                CheckUpdateBtn.Content = "检查更新";
+            }
+        }
+
+        private async Task ShowUpdateDialog(string title, string content)
+        {
+            await new ContentDialog
+            {
+                Title = title,
+                Content = content,
                 CloseButtonText = "确定",
                 DefaultButton = ContentDialogButton.Close
+            }.ShowAsync();
+        }
+
+        private async Task ShowNewVersionDialog(string currentVersion, UpdateInfo updateInfo)
+        {
+            bool isSingleFile = UpdateService.IsSingleFilePublish();
+
+            var stackPanel = new StackPanel { Width = 400 };
+
+            // 版本信息
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = $"发现新版本: v{updateInfo.Version}",
+                FontWeight = FontWeights.Bold,
+                FontSize = 16,
+                Foreground = System.Windows.Media.Brushes.DodgerBlue,
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = $"当前版本: v{currentVersion}",
+                Opacity = 0.6,
+                FontSize = 12,
+                Margin = new Thickness(0, 0, 0, 12)
+            });
+
+            // 运行模式提示
+            string modeText = isSingleFile ? "单文件模式（支持自动更新）" : "压缩包模式（需手动更新）";
+            var modeBrush = isSingleFile ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Orange;
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = $"运行模式: {modeText}",
+                FontSize = 12,
+                Foreground = modeBrush,
+                Margin = new Thickness(0, 0, 0, 12)
+            });
+
+            // 更新日志
+            if (!string.IsNullOrEmpty(updateInfo.Body))
+            {
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = "更新内容:",
+                    FontWeight = FontWeights.SemiBold,
+                    FontSize = 13,
+                    Margin = new Thickness(0, 0, 0, 6)
+                });
+
+                // 限制更新日志长度
+                string body = updateInfo.Body;
+                if (body.Length > 800)
+                    body = body.Substring(0, 800) + "\n...";
+
+                var bodyBorder = new Border
+                {
+                    Background = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromArgb(15, 0, 0, 0)),
+                    Padding = new Thickness(12),
+                    CornerRadius = new CornerRadius(6),
+                    MaxHeight = 200
+                };
+
+                var bodyText = new TextBlock
+                {
+                    Text = body,
+                    TextWrapping = TextWrapping.Wrap,
+                    FontSize = 12,
+                    Opacity = 0.8
+                };
+
+                var bodyScroll = new ScrollViewer
+                {
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    MaxHeight = 180,
+                    Content = bodyText
+                };
+
+                bodyBorder.Child = bodyScroll;
+                stackPanel.Children.Add(bodyBorder);
+            }
+
+            // 下载/更新按钮区域（仅单文件模式显示）
+            var actionStack = new StackPanel { Margin = new Thickness(0, 16, 0, 0) };
+
+            if (isSingleFile && updateInfo.IsSingleFileAsset)
+            {
+                var downloadBtn = new WpfButton
+                {
+                    Content = "立即下载并更新",
+                    Style = (Style)FindResource("AccentButtonStyle"),
+                    Height = 36,
+                    HorizontalAlignment = WpfHorizontalAlignment.Stretch,
+                    Tag = updateInfo
+                };
+                downloadBtn.Click += DownloadUpdate_Click;
+                actionStack.Children.Add(downloadBtn);
+            }
+            else
+            {
+                actionStack.Children.Add(new TextBlock
+                {
+                    Text = "当前为压缩包版本，请手动下载更新：\n" +
+                           "1. 在浏览器中下载最新版本压缩包\n" +
+                           "2. 解压到当前程序目录覆盖所有文件\n" +
+                           "3. MoBoxFrp 文件夹中的隧道配置不会被覆盖",
+                    TextWrapping = TextWrapping.Wrap,
+                    FontSize = 12,
+                    Opacity = 0.7,
+                    Margin = new Thickness(0, 0, 0, 10)
+                });
+
+                var openBtn = new WpfButton
+                {
+                    Content = "前往 GitHub 下载",
+                    Height = 36,
+                    HorizontalAlignment = WpfHorizontalAlignment.Stretch,
+                    Tag = updateInfo
+                };
+                openBtn.Click += (s, args) => UpdateService.OpenReleasePage(updateInfo.HtmlUrl);
+                actionStack.Children.Add(openBtn);
+            }
+
+            stackPanel.Children.Add(actionStack);
+
+            var dialog = new ContentDialog
+            {
+                Title = "发现新版本",
+                Content = stackPanel,
+                CloseButtonText = "稍后再说",
+                DefaultButton = ContentDialogButton.Close
             };
-            _ = updateDialog.ShowAsync();
+
+            await dialog.ShowAsync();
+        }
+
+        private async void DownloadUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is WpfButton btn && btn.Tag is UpdateInfo updateInfo)
+            {
+                btn.IsEnabled = false;
+                btn.Content = "下载中...";
+
+                var progressBorder = new Border
+                {
+                    Child = new ProgressRing { IsActive = true, Width = 24, Height = 24 },
+                    Margin = new Thickness(0, 8, 0, 0),
+                    HorizontalAlignment = WpfHorizontalAlignment.Center
+                };
+
+                var progress = new Progress<(long downloaded, long total)>(p =>
+                {
+                    if (p.total > 0)
+                    {
+                        double percent = (double)p.downloaded / p.total * 100;
+                        btn.Content = $"下载中... {percent:F0}%";
+                    }
+                });
+
+                bool success = await UpdateService.DownloadAndPrepareUpdateAsync(
+                    updateInfo.DownloadUrl, progress);
+
+                if (success)
+                {
+                    var result = await new ContentDialog
+                    {
+                        Title = "下载完成",
+                        Content = "新版本已下载完成，程序将重启以完成更新。\n隧道配置和登录信息将自动保留。",
+                        PrimaryButtonText = "立即重启更新",
+                        CloseButtonText = "稍后更新",
+                        DefaultButton = ContentDialogButton.Primary
+                    }.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        UpdateService.ApplyUpdateAndRestart();
+                    }
+                }
+                else
+                {
+                    await ShowUpdateDialog("下载失败", "下载更新文件失败，请检查网络连接后重试。\n你也可以前往 GitHub 手动下载。");
+                    btn.IsEnabled = true;
+                    btn.Content = "立即下载并更新";
+                }
+            }
         }
 
         // 免责声明弹窗
@@ -234,6 +501,41 @@ namespace MoboxFrpGUI
             App.LastExceptionReport = "";
             ErrorDetailTextBox.Text = "";
             ErrorDetailPanel.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// 静默检查更新（程序启动时调用），如有新版本弹出通知
+        /// </summary>
+        public static async void SilentCheckUpdateAsync()
+        {
+            try
+            {
+                var config = ConfigService.LoadConfig();
+                if (config == null || !config.AutoCheckUpdate) return;
+
+                var updateInfo = await UpdateService.CheckForUpdateAsync();
+                if (updateInfo == null) return;
+
+                string currentVersion = UpdateService.GetCurrentVersion();
+                if (!UpdateService.HasNewVersion(currentVersion, updateInfo.Version)) return;
+
+                // 有新版本，弹出通知
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    NotificationService.ShowPersistent(
+                        $"发现新版本 v{updateInfo.Version}，点击查看详情",
+                        NotificationType.Info,
+                        () =>
+                        {
+                            // 导航到设置页
+                            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
+                            {
+                                mainWindow.NavigateToSettings();
+                            }
+                        });
+                });
+            }
+            catch { }
         }
     }
 }

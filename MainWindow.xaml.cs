@@ -30,6 +30,9 @@ namespace MoboxFrpGUI
             InitializeUserInfo();
 
             ToastService.OnTunnelToastClicked = OnTunnelToastClicked;
+
+            // 登录进入主界面后自动检查更新
+            Loaded += (s, e) => SettingsPage.SilentCheckUpdateAsync();
         }
 
         private void OnTunnelToastClicked(string tunnelName)

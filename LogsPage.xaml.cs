@@ -18,6 +18,8 @@ namespace MoboxFrpGUI
         private TunnelItem? _selectedTunnel;
         private int _lastLogCount = 0;
         private readonly WpfSolidColorBrush _defaultForeground = new WpfSolidColorBrush(WpfColor.FromRgb(0xE0, 0xE0, 0xE0));
+        private string _searchKeyword = "";
+        private string _originalFullLog = "";
 
         public LogsPage()
         {
@@ -128,6 +130,7 @@ namespace MoboxFrpGUI
 
         private void RenderFullLog(string fullLog)
         {
+            _originalFullLog = fullLog;
             LogRichTextBox.Document.Blocks.Clear();
 
             if (string.IsNullOrEmpty(fullLog))
@@ -137,8 +140,19 @@ namespace MoboxFrpGUI
                 return;
             }
 
-            AnsiColorParser.AppendColoredText(LogRichTextBox.Document, fullLog, _defaultForeground);
+            string displayLog = FilterLogByKeyword(fullLog, _searchKeyword);
+            AnsiColorParser.AppendColoredText(LogRichTextBox.Document, displayLog, _defaultForeground);
             ScrollToEnd();
+        }
+
+        private string FilterLogByKeyword(string fullLog, string keyword)
+        {
+            if (string.IsNullOrEmpty(keyword))
+                return fullLog;
+
+            var lines = fullLog.Split('\n');
+            var filteredLines = lines.Where(line => line.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            return string.Join("\n", filteredLines);
         }
 
         private void CurrentTunnel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -146,6 +160,7 @@ namespace MoboxFrpGUI
             if (e.PropertyName == nameof(TunnelItem.FullLogText) && _selectedTunnel != null)
             {
                 string fullText = _selectedTunnel.FullLogText;
+                _originalFullLog = fullText;
                 int currentCount = CountLines(fullText);
 
                 if (currentCount > _lastLogCount)
@@ -162,11 +177,20 @@ namespace MoboxFrpGUI
                     }
                     string newText = string.Join("\n", newLines);
 
-                    LogRichTextBox.Dispatcher.Invoke(() =>
+                    string displayText = newText;
+                    if (!string.IsNullOrEmpty(_searchKeyword))
                     {
-                        AnsiColorParser.AppendColoredText(LogRichTextBox.Document, newText, _defaultForeground);
-                        ScrollToEnd();
-                    });
+                        displayText = FilterLogByKeyword(newText, _searchKeyword);
+                    }
+
+                    if (!string.IsNullOrEmpty(displayText))
+                    {
+                        LogRichTextBox.Dispatcher.Invoke(() =>
+                        {
+                            AnsiColorParser.AppendColoredText(LogRichTextBox.Document, displayText, _defaultForeground);
+                            ScrollToEnd();
+                        });
+                    }
 
                     _lastLogCount = currentCount;
                 }
@@ -269,7 +293,19 @@ namespace MoboxFrpGUI
                 var para = new System.Windows.Documents.Paragraph { Margin = new Thickness(0) };
                 LogRichTextBox.Document.Blocks.Add(para);
                 _lastLogCount = 0;
+                _originalFullLog = "";
                 UpdateEmptyHint();
+            }
+        }
+
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _searchKeyword = SearchTextBox.Text.Trim();
+
+            if (_selectedTunnel != null)
+            {
+                RenderFullLog(_selectedTunnel.FullLogText);
+                _lastLogCount = CountLines(_selectedTunnel.FullLogText);
             }
         }
     }

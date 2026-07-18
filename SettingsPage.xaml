@@ -175,7 +175,7 @@
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1" CornerRadius="8" Padding="16">
                         <xa:SimpleStackPanel Spacing="16">
-                            <Grid>
+                            <Grid Height="40">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
@@ -184,7 +184,7 @@
                                 <ui:FontIcon Glyph="&#xE946;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="MoboxFrp GUI" FontWeight="SemiBold" FontSize="14"/>
-                                    <TextBlock Text="{Binding Source={StaticResource AppVersion}, StringFormat='版本 {0}'}" Opacity="0.6" FontSize="12"/>
+                                    <TextBlock x:Name="VersionText" Text="版本 1.1.1" Opacity="0.6" FontSize="12"/>
                                 </StackPanel>
                                 <Button x:Name="CheckUpdateBtn" Grid.Column="2" Content="检查更新" Click="CheckUpdateBtn_Click"
                                         Height="32" Padding="16,0" VerticalAlignment="Center"
@@ -192,13 +192,29 @@
                                         ui:ControlHelper.CornerRadius="4"/>
                             </Grid>
 
-                            <Grid>
+                            <Grid Height="40">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ui:FontIcon Glyph="&#xE9A5;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                <ui:FontIcon Glyph="&#xE916;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="自动检查更新" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="登录后自动检测新版本" Opacity="0.6" FontSize="12"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="ToggleAutoCheckUpdate" Grid.Column="2"
+                                                 Toggled="ToggleAutoCheckUpdate_Toggled" VerticalAlignment="Center"
+                                                 Height="32"/>
+                            </Grid>
+
+                            <Grid Height="40">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:FontIcon Glyph="&#xE897;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="项目说明" FontWeight="SemiBold" FontSize="14"/>
                                     <TextBlock Text="本程序为 MoboxFrp 社区贡献版，由社区开发者维护" Opacity="0.6" FontSize="12"/>
@@ -208,7 +224,7 @@
                                         ui:ControlHelper.CornerRadius="4"/>
                             </Grid>
 
-                            <Grid>
+                            <Grid Height="40">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>

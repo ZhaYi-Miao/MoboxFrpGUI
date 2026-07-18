@@ -12,6 +12,8 @@ namespace MoboxFrpGUI.Services
         public string Password { get; set; }
         public bool RememberMe { get; set; }
         public bool AutoLogin { get; set; }
+        public string Theme { get; set; } = "Default"; // Default, Light, Dark
+        public bool AutoCheckUpdate { get; set; } = true;
     }
 
     public static class ConfigService
@@ -32,7 +34,28 @@ namespace MoboxFrpGUI.Services
         {
             try
             {
-                var config = new UserConfig { Account = account, Password = password, RememberMe = remember, AutoLogin = autoLogin };
+                var config = LoadConfig() ?? new UserConfig();
+                config.Account = account;
+                config.Password = password;
+                config.RememberMe = remember;
+                config.AutoLogin = autoLogin;
+                string json = JsonSerializer.Serialize(config);
+                byte[] data = Encoding.UTF8.GetBytes(json);
+                byte[] encryptedData = ProtectedData.Protect(data, FixedEntropy, DataProtectionScope.CurrentUser);
+                File.WriteAllBytes(FilePath, encryptedData);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"保存配置失败: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool SaveConfig(UserConfig config)
+        {
+            try
+            {
                 string json = JsonSerializer.Serialize(config);
                 byte[] data = Encoding.UTF8.GetBytes(json);
                 byte[] encryptedData = ProtectedData.Protect(data, FixedEntropy, DataProtectionScope.CurrentUser);

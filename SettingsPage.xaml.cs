@@ -180,18 +180,35 @@ namespace MoboxFrpGUI
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            ConfigService.SaveConfig("", "", false, false);
+            // 清除保存的登录信息
+            var config = ConfigService.LoadConfig() ?? new UserConfig();
+            config.Account = "";
+            config.Password = "";
+            config.RememberMe = false;
+            config.AutoLogin = false;
+            ConfigService.SaveConfig(config);
 
             var mainWindow = Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
+            if (mainWindow == null) return;
+
+            // 隐藏主窗口（不关闭）
+            mainWindow.Hide();
+
+            // 显示登录窗口
+            var login = new LoginWindow();
+            login.Owner = mainWindow;
+            login.Closed += (s, args) =>
             {
-                mainWindow.IsForceClosing = true;
-            }
-
-            LoginWindow login = new LoginWindow();
+                // 登录成功后刷新主窗口信息
+                if (login.LoginSucceed)
+                {
+                    mainWindow.RefreshAfterRelogin();
+                }
+                // 重新显示主窗口
+                mainWindow.Show();
+                mainWindow.Activate();
+            };
             login.Show();
-
-            mainWindow?.Close();
         }
 
         private void UpdateWindowBackdrop()

@@ -567,12 +567,21 @@ namespace MoboxFrpGUI
                     throw new FileNotFoundException($"找不到核心组件：{sourceFrpc}");
                 }
 
-                await new Modern.ContentDialog
+                var dialog = new Modern.ContentDialog
                 {
                     Title = "生成成功",
-                    Content = $"隧道 [{uniqueName}] 已就绪。\n本地 {lpt} -> 远程 {rpt}",
-                    PrimaryButtonText = "确定"
-                }.ShowAsync();
+                    Content = $"隧道 [{uniqueName}] 已就绪。\n本地 {lpt} -> 远程 {rpt}\n\n是否前往隧道管理页启动？",
+                    PrimaryButtonText = "前往启动",
+                    CloseButtonText = "稍后"
+                };
+
+                if (await dialog.ShowAsync() == Modern.ContentDialogResult.Primary)
+                {
+                    if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
+                    {
+                        mainWindow.Dispatcher.Invoke(() => mainWindow.NavigateToTunnels());
+                    }
+                }
 
                 var newTunnel = new TunnelItem
                 {
@@ -603,6 +612,18 @@ namespace MoboxFrpGUI
             var hint = FindControl<TextBlock>(contentInstance, "RemotePortHint");
             if (hint != null) hint.Text = $"(可用范围: {item.portOpen})";
 
+            // 解析端口范围并填充下拉框
+            var portCombo = FindControl<ComboBox>(contentInstance, "RemotePort");
+            if (portCombo != null && !string.IsNullOrWhiteSpace(item.portOpen))
+            {
+                var ports = ParsePortRange(item.portOpen);
+                if (ports.Count > 0)
+                {
+                    portCombo.ItemsSource = ports;
+                    portCombo.SelectedIndex = 0;
+                }
+            }
+
             var dialog = new Modern.ContentDialog
             {
                 Title = "生成隧道配置",
@@ -622,9 +643,11 @@ namespace MoboxFrpGUI
                 // 生成带时间戳的唯一名称，优化多开时候的冲突
                 string uniqueName = $"{baseName}_{DateTime.Now:MMddHHmmss}";
 
-                string localIP = FindControl<System.Windows.Controls.TextBox>(contentInstance, "LocalIP")?.Text ?? "127.0.0.1";
-                string localPort = FindControl<System.Windows.Controls.TextBox>(contentInstance, "LocalPort")?.Text ?? "8080";
-                string remotePort = FindControl<System.Windows.Controls.TextBox>(contentInstance, "RemotePort")?.Text;
+                string localIP = FindControl<System.Windows.Controls.TextBox>(contentInstance, "LocalIP")?.Text?.Trim();
+                if (string.IsNullOrWhiteSpace(localIP)) localIP = "127.0.0.1";
+                string localPort = FindControl<System.Windows.Controls.TextBox>(contentInstance, "LocalPort")?.Text?.Trim();
+                if (string.IsNullOrWhiteSpace(localPort)) localPort = "25565";
+                string remotePort = (FindControl<ComboBox>(contentInstance, "RemotePort")?.SelectedItem as string) ?? "";
 
                 var pg = FindControl<StackPanel>(contentInstance, "ProtocolGroup");
                 string protocol = pg?.Children.OfType<RadioButton>().FirstOrDefault(r => r.IsChecked == true)?.Content.ToString().ToLower() ?? "tcp";
@@ -641,6 +664,36 @@ namespace MoboxFrpGUI
                 }
                 await CreateTunnelIsolatedAsync(uniqueName, item, localIP, localPort, remotePort, protocol);
             }
+        }
+
+        private List<string> ParsePortRange(string rangeStr)
+        {
+            var ports = new List<string>();
+            if (string.IsNullOrWhiteSpace(rangeStr)) return ports;
+
+            try
+            {
+                // 处理 "start-end" 格式
+                if (rangeStr.Contains("-"))
+                {
+                    var parts = rangeStr.Split('-');
+                    if (parts.Length == 2 &&
+                        int.TryParse(parts[0].Trim(), out int start) &&
+                        int.TryParse(parts[1].Trim(), out int end))
+                    {
+                        for (int i = start; i <= end; i++)
+                            ports.Add(i.ToString());
+                    }
+                }
+                // 处理单个端口
+                else if (int.TryParse(rangeStr.Trim(), out int singlePort))
+                {
+                    ports.Add(singlePort.ToString());
+                }
+            }
+            catch { }
+
+            return ports;
         }
 
         private T FindControl<T>(FrameworkElement parent, string name) where T : FrameworkElement

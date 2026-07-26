@@ -138,7 +138,7 @@ namespace MoboxFrpGUI.Services
             {
                 return $"{version.Major}.{version.Minor}.{version.Build}";
             }
-            return "1.2.0";
+            return "1.2.1";
         }
 
         /// <summary>

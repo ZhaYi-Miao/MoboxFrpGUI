@@ -28,6 +28,7 @@ namespace MoboxFrpGUI.Models
         private string _status = "已停止";
         private string _configPath;
         private bool _isRunning;
+        private bool _isTransitioning;
         private string _fullLogText = "";
         private Process _process;
         private string _remoteAddress = "未获取";
@@ -445,7 +446,7 @@ namespace MoboxFrpGUI.Models
             StopStartupTimer();
             Status = "运行中";
             TunnelStatus = TunnelStatus.Running;
-            ToastService.ShowTunnelStarted(Name);
+            ToastService.ShowTunnelStarted(Name, RemoteAddress, Protocol, LocalAddress);
         }
 
         private void CheckLogForStatus(string logLine)

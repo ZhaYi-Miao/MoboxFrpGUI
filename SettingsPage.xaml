@@ -184,7 +184,7 @@
                                 <ui:FontIcon Glyph="&#xE946;" FontSize="20" VerticalAlignment="Center" Margin="0,0,16,0"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="MoboxFrp GUI" FontWeight="SemiBold" FontSize="14"/>
-                                    <TextBlock x:Name="VersionText" Text="版本 1.2.0" Opacity="0.6" FontSize="12"/>
+                                    <TextBlock x:Name="VersionText" Text="版本 1.2.1" Opacity="0.6" FontSize="12"/>
                                 </StackPanel>
                                 <Button x:Name="CheckUpdateBtn" Grid.Column="2" Content="检查更新" Click="CheckUpdateBtn_Click"
                                         Height="32" Padding="16,0" VerticalAlignment="Center"

@@ -28,6 +28,8 @@ namespace MoboxFrpGUI.Pages
         private bool _isShowingAd = false;
         private readonly string _baseDomain = "https://www.moboxfrp.top";
         private readonly ApiService _apiService = new ApiService();
+        private static UserInfoResponse _cachedUserInfo;
+
         public HomePage()
         {
             InitializeComponent();
@@ -38,15 +40,22 @@ namespace MoboxFrpGUI.Pages
 
         private async void LoadHomeData()
         {
+            // 先显示缓存数据，避免每次都看到"加载中..."
+            if (_cachedUserInfo != null)
+            {
+                UpdateUserUI(_cachedUserInfo);
+            }
+
             try
             {
                 var info = await _apiService.PostWithTokenAsync<UserInfoResponse>("UserInfo");
 
                 if (info != null && info.success)
                 {
+                    _cachedUserInfo = info;
                     UpdateUserUI(info);
                 }
-                else
+                else if (_cachedUserInfo == null)
                 {
                     TxtUserGroup.Text = "获取失败";
                     TxtRealNameStatus.Text = "未知";

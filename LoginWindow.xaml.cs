@@ -13,6 +13,11 @@ namespace MoboxFrpGUI
     {
         private readonly ApiService _apiService = new ApiService();
 
+        /// <summary>
+        /// 是否登录成功（供调用方判断）
+        /// </summary>
+        public bool LoginSucceed { get; private set; } = false;
+
         public LoginWindow()
         {
             InitializeComponent();
@@ -79,11 +84,21 @@ namespace MoboxFrpGUI
         private async Task PerformLogin(string account, string password, bool isAuto)
         {
             BtnLogin.IsEnabled = false;
-            TxtStatus.Text = "正在自动登录...";
+            ShowLoading(true);
 
             var result = await _apiService.LoginAsync(account, password);
             if (result != null && result.Success)
             {
+                ShowLoading(false);
+                LoginSucceed = true;
+
+                if (Owner != null)
+                {
+                    // 重登录模式：不创建新窗口，让调用方处理
+                    this.Close();
+                    return;
+                }
+
                 MainWindow main = new MainWindow();
                 System.Windows.Application.Current.MainWindow = main;
                 main.Show();
@@ -92,6 +107,7 @@ namespace MoboxFrpGUI
             }
             else
             {
+                ShowLoading(false);
                 BtnLogin.IsEnabled = true;
                 
                 bool isNetworkError = IsNetworkError(result);
@@ -133,8 +149,7 @@ namespace MoboxFrpGUI
             }
 
             BtnLogin.IsEnabled = false;
-            TxtStatus.Text = "正在连接 MoBoxFrp 服务器...";
-            TxtStatus.Foreground = System.Windows.Media.Brushes.Gray;
+            ShowLoading(true);
             HideOfflineLoginButton();
 
             var result = await _apiService.LoginAsync(account, password);
@@ -147,10 +162,20 @@ namespace MoboxFrpGUI
                     System.Diagnostics.Debug.WriteLine("保存登录信息失败，下次需要手动登录");
                 }
 
+                ShowLoading(false);
                 TxtStatus.Text = "登录成功！正在跳转……";
                 TxtStatus.Foreground = System.Windows.Media.Brushes.Green;
 
-                await Task.Delay(800);
+                await Task.Delay(500);
+
+                LoginSucceed = true;
+
+                if (Owner != null)
+                {
+                    // 重登录模式：不创建新窗口，让调用方处理
+                    this.Close();
+                    return;
+                }
 
                 MainWindow main = new MainWindow();
                 System.Windows.Application.Current.MainWindow = main;
@@ -160,6 +185,7 @@ namespace MoboxFrpGUI
             }
             else
             {
+                ShowLoading(false);
                 BtnLogin.IsEnabled = true;
                 TxtStatus.Foreground = System.Windows.Media.Brushes.Red;
 
@@ -197,6 +223,11 @@ namespace MoboxFrpGUI
         {
             BtnOfflineLogin.Visibility = Visibility.Collapsed;
             BtnOfflineLogin.IsEnabled = false;
+        }
+
+        private void ShowLoading(bool isLoading)
+        {
+            LoadingOverlay.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void BtnOfflineLogin_Click(object sender, RoutedEventArgs e)

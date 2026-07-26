@@ -1,4 +1,4 @@
-﻿<ui:Page x:Class="MoboxFrpGUI.UserCodesPage"
+<ui:Page x:Class="MoboxFrpGUI.UserCodesPage"
          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
          xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
@@ -8,33 +8,35 @@
 
     <ui:Page.Resources>
         <DataTemplate x:Key="TunnelConfigFormTemplate">
-            <xa:SimpleStackPanel Spacing="12" Width="320" Margin="0,10,0,0">
+            <xa:SimpleStackPanel Spacing="8" Width="320" Margin="0,10,0,0">
                 <TextBlock Text="隧道备注名" Opacity="0.6" FontSize="12"/>
                 <TextBox x:Name="CfgName" />
 
-                <TextBlock Text="穿透码 ID (只读)" Opacity="0.6" FontSize="12" Margin="0,8,0,0"/>
+                <TextBlock Text="穿透码 ID (只读)" Opacity="0.6" FontSize="12"/>
                 <TextBox x:Name="CfgID" IsReadOnly="True" Background="{DynamicResource SystemControlBackgroundComponentMeshBrush}"/>
 
-                <Grid Margin="0,8,0,0">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                    <xa:SimpleStackPanel Grid.Column="0" Margin="0,0,8,0" Spacing="4">
                         <TextBlock Text="本地 IP" Opacity="0.6" FontSize="12"/>
-                        <TextBox x:Name="LocalIP" Text="127.0.0.1"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1">
+                        <TextBox x:Name="LocalIP" />
+                        <TextBlock Text="留空默认为 127.0.0.1" FontSize="10" Opacity="0.35"/>
+                    </xa:SimpleStackPanel>
+                    <xa:SimpleStackPanel Grid.Column="1" Spacing="4">
                         <TextBlock Text="本地端口" Opacity="0.6" FontSize="12"/>
                         <TextBox x:Name="LocalPort" />
-                    </StackPanel>
+                        <TextBlock Text="留空默认为 25565" FontSize="10" Opacity="0.35"/>
+                    </xa:SimpleStackPanel>
                 </Grid>
 
-                <TextBlock Text="远程开放端口" Opacity="0.6" FontSize="12" Margin="0,8,0,0"/>
-                <TextBox x:Name="RemotePort" />
-                <TextBlock x:Name="RemotePortHint" FontSize="11" Foreground="{DynamicResource SystemAccentColorBrush}" Margin="0,-4,0,0" Text="(可用范围: --)"/>
+                <TextBlock Text="远程开放端口" Opacity="0.6" FontSize="12"/>
+                <ComboBox x:Name="RemotePort" Height="32"/>
+                <TextBlock x:Name="RemotePortHint" FontSize="11" Foreground="{DynamicResource SystemFillColorCautionBrush}" Text="(可用范围: --)"/>
 
-                <TextBlock Text="协议类型" Opacity="0.6" FontSize="12" Margin="0,8,0,0"/>
+                <TextBlock Text="协议类型" Opacity="0.6" FontSize="12"/>
                 <StackPanel x:Name="ProtocolGroup" Orientation="Horizontal">
                     <RadioButton Content="TCP" IsChecked="True" Margin="0,0,16,0"/>
                     <RadioButton Content="UDP"/>
@@ -117,9 +119,7 @@
                                     <Button Content="续费" Click="Renew_Click" Style="{StaticResource AccentButtonStyle}" ui:ControlHelper.CornerRadius="4"/>
                                     <Button Content="升配" Click="Upgrade_Click" ui:ControlHelper.CornerRadius="4"/>
                                     <Button Content="删除" Click="Delete_Click" Foreground="{DynamicResource SystemFillColorCriticalBrush}" ui:ControlHelper.CornerRadius="4"/>
-                                    <Button Click="Config_Click" Width="36" ui:ControlHelper.CornerRadius="4" Background="Transparent">
-                                        <ui:FontIcon Glyph="&#xE713;" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Button>
+                                    <Button Content="配置隧道" Click="Config_Click" Style="{StaticResource AccentButtonStyle}" ui:ControlHelper.CornerRadius="4"/>
                                 </xa:SimpleStackPanel>
                             </DockPanel>
 

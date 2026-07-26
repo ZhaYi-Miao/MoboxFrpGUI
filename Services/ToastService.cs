@@ -33,6 +33,30 @@ namespace MoboxFrpGUI.Services
                 string arg = e.Argument ?? "";
                 Debug.WriteLine($"[ToastService] Toast 激活，参数: '{arg}'");
 
+                if (arg.StartsWith("copyaddr:"))
+                {
+                    string remoteAddress = arg.Substring("copyaddr:".Length);
+                    Debug.WriteLine($"[ToastService] 复制远程地址: '{remoteAddress}'");
+                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        try
+                        {
+                            System.Windows.Clipboard.SetText(remoteAddress);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"[ToastService] 复制到剪贴板失败: {ex.Message}");
+                        }
+                    });
+                    return;
+                }
+
+                if (arg.StartsWith("dismiss"))
+                {
+                    Debug.WriteLine("[ToastService] 用户点击确定，忽略");
+                    return;
+                }
+
                 string tunnelName = "";
                 if (arg.StartsWith("tunnel:"))
                 {
@@ -63,7 +87,7 @@ namespace MoboxFrpGUI.Services
             }
         }
 
-        public static void ShowTunnelStarted(string tunnelName)
+        public static void ShowTunnelStarted(string tunnelName, string remoteAddress, string protocol, string localAddress)
         {
             Debug.WriteLine($"[ToastService] ShowTunnelStarted 调用: {tunnelName}, IsSupported = {IsSupported}");
             if (!IsSupported) return;
@@ -73,10 +97,16 @@ namespace MoboxFrpGUI.Services
                 string xml = $@"<toast launch=""tunnel:{tunnelName}"">
                     <visual>
                         <binding template=""ToastGeneric"">
-                            <text>隧道已启动</text>
-                            <text>{tunnelName} 正在运行</text>
+                            <text>隧道 {tunnelName} 启动成功！</text>
+                            <text>点击""复制远程地址""按钮开始愉快的玩耍吧</text>
+                            <text>远程地址：{remoteAddress}</text>
+                            <text placement=""attribution"">{protocol} {localAddress}</text>
                         </binding>
                     </visual>
+                    <actions>
+                        <action content=""复制远程地址"" arguments=""copyaddr:{remoteAddress}"" activationType=""background""/>
+                        <action content=""确定"" arguments=""dismiss"" activationType=""background""/>
+                    </actions>
                 </toast>";
 
                 var doc = new Windows.Data.Xml.Dom.XmlDocument();

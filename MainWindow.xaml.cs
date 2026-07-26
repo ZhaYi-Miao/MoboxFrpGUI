@@ -13,6 +13,7 @@ namespace MoboxFrpGUI
     public partial class MainWindow : Window
     {
         private readonly ApiService _apiService = new ApiService();
+        private static UserInfoResponse _cachedSidebarInfo;
         private Forms.NotifyIcon _notifyIcon;
         public bool IsForceClosing { get; set; } = false;
 
@@ -26,6 +27,9 @@ namespace MoboxFrpGUI
             NavView.SelectionChanged += NavView_SelectionChanged;
             if (NavView.MenuItems.Count > 0)
                 NavView.SelectedItem = NavView.MenuItems[0];
+
+            // 侧边栏默认展开
+            NavView.IsPaneOpen = true;
 
             InitializeUserInfo();
 
@@ -130,7 +134,17 @@ namespace MoboxFrpGUI
         }
 
 
-        // 侧边栏用户信息（仅在开启时更新
+        // 侧边栏用户信息（带缓存，避免每次导航都显示"未登录"）
+        private void UpdateSidebarUI(UserInfoResponse info)
+        {
+            TxtUserName.Text = info.username ?? "获取失败喵";
+            TxtBalance.Text = $"金币: {info.gold} | 银币: {info.silver}";
+            if (UserPane.Icon is PersonPicture avatar)
+            {
+                avatar.DisplayName = info.username;
+            }
+        }
+
         private async Task LoadUserInfoAsync()
         {
             try
@@ -138,21 +152,16 @@ namespace MoboxFrpGUI
                 var info = await _apiService.PostWithTokenAsync<UserInfoResponse>("UserInfo");
                 if (info != null && info.success)
                 {
-                    TxtUserName.Text = info.username;
-                    TxtBalance.Text = $"金币: {info.gold} | 银币: {info.silver}";
-                    if (UserPane.Icon is PersonPicture avatar)
-                    {
-                        avatar.DisplayName = info.username;
-                    }
+                    _cachedSidebarInfo = info;
+                    UpdateSidebarUI(info);
                 }
-                else
+                else if (_cachedSidebarInfo == null)
                 {
                     TxtUserName.Text = "获取失败喵";
                 }
             }
             catch (Exception ex)
             {
-                TxtUserName.Text = "网络错误";
                 Debug.WriteLine($"加载用户信息失败: {ex.Message}");
             }
         }
@@ -160,6 +169,12 @@ namespace MoboxFrpGUI
         // 在构造函数中调用异步方法
         private async void InitializeUserInfo()
         {
+            // 先显示缓存数据，避免每次都看到"未登录"
+            if (_cachedSidebarInfo != null)
+            {
+                UpdateSidebarUI(_cachedSidebarInfo);
+            }
+
             await LoadUserInfoAsync();
         }
 
@@ -167,6 +182,19 @@ namespace MoboxFrpGUI
         {
             Debug.WriteLine("[MainWindow] 开始加载隧道并检测残留进程...");
             App.LoadAndDetectAllTunnels();
+        }
+
+        /// <summary>
+        /// 重登录后刷新用户信息和侧边栏
+        /// </summary>
+        public void RefreshAfterRelogin()
+        {
+            _cachedSidebarInfo = null;
+            InitializeUserInfo();
+
+            // 刷新首页
+            if (NavView.MenuItems.Count > 0)
+                NavView.SelectedItem = NavView.MenuItems[0];
         }
 
         // 侧边栏跳转逻辑
@@ -218,6 +246,18 @@ namespace MoboxFrpGUI
                     {
                         settingsPage.RefreshErrorDetail();
                     }
+                    return;
+                }
+            }
+        }
+
+        public void NavigateToTunnels()
+        {
+            foreach (var item in NavView.MenuItems)
+            {
+                if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == "Tunnels")
+                {
+                    NavView.SelectedItem = navItem;
                     return;
                 }
             }

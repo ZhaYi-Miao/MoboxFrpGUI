@@ -100,7 +100,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- 日志头部 -->
-                    <DockPanel LastChildFill="True" Margin="16,14,16,10">
+                    <DockPanel LastChildFill="False" Margin="16,14,16,10">
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                             <Border Background="{DynamicResource SystemAccentColorBrush}" Width="4" Height="16" CornerRadius="2" Margin="0,0,10,0"/>
                             <ui:FontIcon Glyph="&#xE8A5;" FontSize="16" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -120,17 +120,17 @@
                         </Button>
 
                         <!-- 搜索框 -->
-                        <Grid DockPanel.Dock="Right" Margin="0,0,0,0">
+                        <Grid DockPanel.Dock="Right" Margin="0,0,12,0">
                             <TextBox x:Name="SearchTextBox"
-                                     Width="180"
-                                     Padding="28,6,10,6"
+                                     Width="200"
+                                     Padding="26,6,10,6"
                                      FontSize="13"
                                      VerticalAlignment="Center"
                                      ui:ControlHelper.CornerRadius="4"
                                      ui:ControlHelper.PlaceholderText="搜索日志..."
                                      TextChanged="SearchTextBox_TextChanged"/>
                             <ui:FontIcon Glyph="&#xE721;" FontSize="14" 
-                                         HorizontalAlignment="Left" Margin="8,0,0,0"
+                                         HorizontalAlignment="Left" Margin="6,0,0,0"
                                          VerticalAlignment="Center"
                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Grid>
